@@ -1,0 +1,88 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "C: gcc 编译",
+            "command": "E:\\Bandzip\\mingw64\\bin\\gcc.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "使用 gcc 编译 C 源文件"
+        },
+        {
+            "type": "shell",
+            "label": "C++: g++ 编译",
+            "command": "E:\\Bandzip\\mingw64\\bin\\g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "-finput-charset=UTF-8",
+                "-fexec-charset=UTF-8",
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "使用 g++ 编译 C++ 源文件"
+        },
+        {
+            "type": "shell",
+            "label": "运行程序",
+            "command": "& \"${fileDirname}\\${fileBasenameNoExtension}.exe\"",
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [],
+            "detail": "运行编译好的可执行文件"
+        },
+        {
+            "type": "shell",
+            "label": "C: 编译并运行",
+            "dependsOn": [
+                "C: gcc 编译"
+            ],
+            "command": "& \"${fileDirname}\\${fileBasenameNoExtension}.exe\"",
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [],
+            "dependsOrder": "sequence",
+            "detail": "gcc 编译后自动运行"
+        },
+        {
+            "type": "shell",
+            "label": "C++: 编译并运行",
+            "dependsOn": [
+                "C++: g++ 编译"
+            ],
+            "command": "& \"${fileDirname}\\${fileBasenameNoExtension}.exe\"",
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [],
+            "dependsOrder": "sequence",
+            "detail": "g++ 编译后自动运行"
+        }
+    ]
+}
