@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell($c = [System.IO.File]::ReadAllText\\(\"e:\\\\CODE\\\\game.cpp\", [System.Text.Encoding]::UTF8\\); $bad = @\\(\\); for \\($i=0; $i -lt $c.Length; $i++\\) { $n = [int]$c[$i]; if \\($n -gt 127\\) { $isHan = \\($n -ge 0x4E00 -and $n -le 0x9FFF\\) -or \\($n -ge 0x3400 -and $n -le 0x4DBF\\); if \\(-not $isHan\\) { $bad += \"U+$\\($n.ToString\\('X4'\\)\\)='$\\($c[$i]\\)'\" } } }; if \\($bad.Count -eq 0\\) { Write-Host \"All clean!\" } else { $bad | Select-Object -First 20 })"
+      "PowerShell($c = [System.IO.File]::ReadAllText\\(\"e:\\\\CODE\\\\game.cpp\", [System.Text.Encoding]::UTF8\\); $bad = @\\(\\); for \\($i=0; $i -lt $c.Length; $i++\\) { $n = [int]$c[$i]; if \\($n -gt 127\\) { $isHan = \\($n -ge 0x4E00 -and $n -le 0x9FFF\\) -or \\($n -ge 0x3400 -and $n -le 0x4DBF\\); if \\(-not $isHan\\) { $bad += \"U+$\\($n.ToString\\('X4'\\)\\)='$\\($c[$i]\\)'\" } } }; if \\($bad.Count -eq 0\\) { Write-Host \"All clean!\" } else { $bad | Select-Object -First 20 })",
+      "Bash(python -c ' *)",
+      "Bash(powershell.exe -NoProfile -NonInteractive -Command 'Get-ScheduledTask | Where-Object { $_.TaskPath -notlike \"\\\\Microsoft\\\\*\" } | Select-Object TaskName,TaskPath,@{n=\"RunLevel\";e={$_.Principal.RunLevel}},@{n=\"UserId\";e={$_.Principal.UserId}},@{n=\"LogonType\";e={$_.Principal.LogonType}},@{n=\"Hidden\";e={$_.Settings.Hidden}} | Format-Table -AutoSize | Out-String -Width 300')"
     ]
   }
 }

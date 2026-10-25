@@ -1,0 +1,1970 @@
+--- /e/tmp/decomp/Assembly-CSharp.decompiled.cs	2026-10-19 21:22:48.250110900 +0800
++++ /e/tmp/work/Assembly-CSharp.cs	2026-10-19 23:30:32.677298600 +0800
+@@ -1599,6 +1599,10 @@
+ 			{
+ 				return;
+ 			}
++			if (currentSave.lawIds != null && _slotIndex >= 0 && _slotIndex < currentSave.lawIds.Length && currentSave.lawIds[_slotIndex] == lawDefinition.id)
++			{
++				return;
++			}
+ 			if (lawDefinition.treasuryCost > 0 && !LawCatalog.IsPurchased(currentSave, lawDefinition))
+ 			{
+ 				if (currentSave.treasuryGold < lawDefinition.treasuryCost)
+@@ -1617,6 +1621,14 @@
+ 			}
+ 			currentSave.lawIds[_slotIndex] = lawDefinition.id;
+ 			currentSave.lawNames[_slotIndex] = lawDefinition.name;
++			if (currentSave.lawStrength != null && _slotIndex >= 0 && _slotIndex < currentSave.lawStrength.Length)
++			{
++				currentSave.lawStrength[_slotIndex] = 0;
++			}
++			if (currentSave.lawCooldown != null && _slotIndex >= 0 && _slotIndex < currentSave.lawCooldown.Length)
++			{
++				currentSave.lawCooldown[_slotIndex] = 0;
++			}
+ 			currentSave.prestige = Mathf.Max(0, currentSave.prestige - 30);
+ 			GameSession.SaveCurrent();
+ 			if (VillageUiController.Instance != null)
+@@ -1804,72 +1816,123 @@
+ 			}
+ 		}
+ 
++		private static void BindClick(Button button, UnityEngine.Events.UnityAction action)
++		{
++			if (button != null)
++			{
++				button.onClick.AddListener(action);
++			}
++		}
++
+ 		private void Awake()
+ 		{
++			ResolveMissingReferences();
+ 			GameSession.Initialize();
+-			continueButton.onClick.AddListener(ContinueGame);
+-			newGameButton.onClick.AddListener(() =>
++			BindClick(continueButton, ContinueGame);
++			BindClick(newGameButton, delegate
+ 			{
+ 				OpenSlots(SlotMode.NewGame);
+ 			});
+-			loadGameButton.onClick.AddListener(() =>
++			BindClick(loadGameButton, delegate
+ 			{
+ 				OpenSlots(SlotMode.LoadGame);
+ 			});
+-			settingsButton.onClick.AddListener(OpenSettings);
+-			if (creditsButton != null)
+-			{
+-				creditsButton.onClick.AddListener(OpenCredits);
+-			}
+-			exitButton.onClick.AddListener(ExitGame);
+-			slotsBackButton.onClick.AddListener(ClosePanel);
+-			settingsBackButton.onClick.AddListener(ClosePanel);
+-			if (creditsBackButton != null)
+-			{
+-				creditsBackButton.onClick.AddListener(ClosePanel);
+-			}
+-			confirmNoButton.onClick.AddListener(CancelConfirmation);
+-			newSaveButton.onClick.AddListener(CreateNewSave);
+-			previousPageButton.onClick.AddListener(PreviousPage);
+-			nextPageButton.onClick.AddListener(NextPage);
+-			volumeDownButton.onClick.AddListener(() =>
++			BindClick(settingsButton, OpenSettings);
++			BindClick(creditsButton, OpenCredits);
++			BindClick(exitButton, ExitGame);
++			BindClick(slotsBackButton, ClosePanel);
++			BindClick(settingsBackButton, ClosePanel);
++			BindClick(creditsBackButton, ClosePanel);
++			BindClick(confirmNoButton, CancelConfirmation);
++			BindClick(newSaveButton, CreateNewSave);
++			BindClick(previousPageButton, PreviousPage);
++			BindClick(nextPageButton, NextPage);
++			BindClick(volumeDownButton, delegate
+ 			{
+ 				ChangeVolume(-10);
+ 			});
+-			volumeUpButton.onClick.AddListener(() =>
++			BindClick(volumeUpButton, delegate
+ 			{
+ 				ChangeVolume(10);
+ 			});
+-			fullscreenButton.onClick.AddListener(ToggleFullscreen);
+-			animationsButton.onClick.AddListener(ToggleAnimations);
+-			if (keyBindingsButton != null)
+-			{
+-				keyBindingsButton.onClick.AddListener(OpenKeyBindings);
++			BindClick(fullscreenButton, ToggleFullscreen);
++			BindClick(animationsButton, ToggleAnimations);
++			BindClick(keyBindingsButton, OpenKeyBindings);
++			BindClick(confirmYesButton, ConfirmPendingAction);
++			if (slots != null)
++			{
++				for (int num = 0; num < slots.Length; num++)
++				{
++					int captured = num;
++					SaveSlotUiBinding saveSlotUiBinding = slots[num];
++					if (saveSlotUiBinding != null)
++					{
++						BindClick(saveSlotUiBinding.primaryButton, delegate
++						{
++							SelectDisplayedSlot(captured);
++						});
++						BindClick(saveSlotUiBinding.deleteButton, delegate
++						{
++							RequestDeleteDisplayedSlot(captured);
++						});
++					}
++				}
+ 			}
+-			confirmYesButton.onClick.AddListener(ConfirmPendingAction);
+-			for (int num = 0; num < slots.Length; num++)
++			if (versionLabel != null)
+ 			{
+-				int captured = num;
+-				slots[num].primaryButton.onClick.AddListener(() =>
+-				{
+-					SelectDisplayedSlot(captured);
+-				});
+-				slots[num].deleteButton.onClick.AddListener(() =>
+-				{
+-					RequestDeleteDisplayedSlot(captured);
+-				});
++				versionLabel.text = "版本 0.3 · UI/可购买法律验证版";
+ 			}
+-			versionLabel.text = "版本 0.3 · UI/可购买法律验证版";
+ 			RefreshMainMenu();
+ 			RefreshSettings();
+ 			ClosePanel();
+ 		}
+ 
++		private void ResolveMissingReferences()
++		{
++			if (continueButton == null)
++			{
++				continueButton = FindComponent<Button>("ContinueButton");
++			}
++			if (newGameButton == null)
++			{
++				newGameButton = FindComponent<Button>("NewGameButton");
++			}
++			if (loadGameButton == null)
++			{
++				loadGameButton = FindComponent<Button>("LoadGameButton");
++			}
++			if (settingsButton == null)
++			{
++				settingsButton = FindComponent<Button>("SettingsButton");
++			}
++			if (creditsButton == null)
++			{
++				creditsButton = FindComponent<Button>("CreditsButton");
++			}
++			if (exitButton == null)
++			{
++				exitButton = FindComponent<Button>("ExitButton");
++			}
++		}
++
++		private T FindComponent<T>(string name) where T : UnityEngine.Component
++		{
++			Transform[] componentsInChildren = transform.root.GetComponentsInChildren<Transform>(includeInactive: true);
++			for (int i = 0; i < componentsInChildren.Length; i++)
++			{
++				if (componentsInChildren[i].name == name)
++				{
++					return componentsInChildren[i].GetComponent<T>();
++				}
++			}
++			return null;
++		}
++
+ 		private void Update()
+ 		{
+ 			if ((!(KeyBindingController != null) || !KeyBindingController.IsOpen) && Input.GetKeyDown(KeyCode.Escape))
+ 			{
+-				if (confirmPanel.activeSelf)
++				if (confirmPanel != null && confirmPanel.activeSelf)
+ 				{
+ 					CancelConfirmation();
+ 				}
+@@ -1884,7 +1947,10 @@
+ 		{
+ 			if (!GameSession.LoadMostRecent())
+ 			{
+-				continueMeta.text = "没有可继续的存档。";
++				if (continueMeta != null)
++				{
++					continueMeta.text = "没有可继续的存档。";
++				}
+ 				RefreshMainMenu();
+ 			}
+ 			else
+@@ -1898,9 +1964,18 @@
+ 			_slotMode = mode;
+ 			_page = 0;
+ 			SetPanel(Panel.Slots);
+-			slotsTitle.text = "选择存档";
+-			slotsMessage.text = "点击已有存档切换进度，或新建存档。";
+-			newSaveButton.gameObject.SetActive(value: true);
++			if (slotsTitle != null)
++			{
++				slotsTitle.text = "选择存档";
++			}
++			if (slotsMessage != null)
++			{
++				slotsMessage.text = "点击已有存档切换进度，或新建存档。";
++			}
++			if (newSaveButton != null)
++			{
++				newSaveButton.gameObject.SetActive(value: true);
++			}
+ 			RefreshSlots();
+ 		}
+ 
+@@ -1928,7 +2003,7 @@
+ 			{
+ 				LoadGameScene();
+ 			}
+-			else
++			else if (slotsMessage != null)
+ 			{
+ 				slotsMessage.text = "存档读取失败，主文件与备份均不可用。";
+ 			}
+@@ -1940,7 +2015,7 @@
+ 			{
+ 				LoadGameScene();
+ 			}
+-			else
++			else if (slotsMessage != null)
+ 			{
+ 				slotsMessage.text = "无法创建存档，请检查存储空间。";
+ 			}
+@@ -1964,8 +2039,14 @@
+ 		private void ShowConfirmation(string title, string body, Action action)
+ 		{
+ 			_pendingAction = action;
+-			confirmTitle.text = title;
+-			confirmBody.text = body;
++			if (confirmTitle != null)
++			{
++				confirmTitle.text = title;
++			}
++			if (confirmBody != null)
++			{
++				confirmBody.text = body;
++			}
+ 			SetPanel(Panel.Confirm);
+ 		}
+ 
+@@ -2074,30 +2155,62 @@
+ 			}
+ 			if (num < 0)
+ 			{
+-				continueButton.interactable = false;
+-				continueMeta.text = string.Empty;
++				if (continueButton != null)
++				{
++					continueButton.interactable = false;
++				}
++				if (continueMeta != null)
++				{
++					continueMeta.text = string.Empty;
++				}
+ 				return;
+ 			}
+ 			VillageSaveMetadata villageSaveMetadata = VillageSaveService.ReadMetadata(num);
+-			continueButton.interactable = true;
+-			continueMeta.text = "最近存档 " + (num + 1) + " · " + VillageTime.FormatDay(villageSaveMetadata.tick) + " · 威信 " + villageSaveMetadata.prestige;
++			if (continueButton != null)
++			{
++				continueButton.interactable = true;
++			}
++			if (continueMeta != null)
++			{
++				continueMeta.text = "最近存档 " + (num + 1) + " · " + VillageTime.FormatDay(villageSaveMetadata.tick) + " · 威信 " + villageSaveMetadata.prestige;
++			}
+ 		}
+ 
+ 		private void RefreshSlots()
+ 		{
+ 			int[] occupiedSlots = VillageSaveService.GetOccupiedSlots();
+-			int num = slots.Length;
++			int num = ((slots != null) ? slots.Length : 0);
++			if (num <= 0)
++			{
++				return;
++			}
+ 			_pageCount = Mathf.Max(1, (occupiedSlots.Length + num - 1) / num);
+ 			_page = Mathf.Clamp(_page, 0, _pageCount - 1);
+ 			bool flag = occupiedSlots.Length == 0;
+-			emptySlotsLabel.gameObject.SetActive(flag);
+-			emptySlotsLabel.text = "还没有存档。点击“新建存档”开始新游戏。";
+-			pageLabel.text = (flag ? "0 / 0 个存档" : ("第 " + (_page + 1) + " / " + _pageCount + " 页 · 共 " + occupiedSlots.Length + " 个存档"));
+-			previousPageButton.interactable = !flag && _page > 0;
+-			nextPageButton.interactable = !flag && _page < _pageCount - 1;
++			if (emptySlotsLabel != null)
++			{
++				emptySlotsLabel.gameObject.SetActive(flag);
++				emptySlotsLabel.text = "还没有存档。点击“新建存档”开始新游戏。";
++			}
++			if (pageLabel != null)
++			{
++				pageLabel.text = (flag ? "0 / 0 个存档" : ("第 " + (_page + 1) + " / " + _pageCount + " 页 · 共 " + occupiedSlots.Length + " 个存档"));
++			}
++			if (previousPageButton != null)
++			{
++				previousPageButton.interactable = !flag && _page > 0;
++			}
++			if (nextPageButton != null)
++			{
++				nextPageButton.interactable = !flag && _page < _pageCount - 1;
++			}
+ 			for (int i = 0; i < num; i++)
+ 			{
+ 				SaveSlotUiBinding saveSlotUiBinding = slots[i];
++				if (saveSlotUiBinding == null || saveSlotUiBinding.primaryButton == null)
++				{
++					continue;
++				}
+ 				int num2 = _page * num + i;
+ 				bool flag2 = !flag && num2 < occupiedSlots.Length;
+ 				saveSlotUiBinding.primaryButton.gameObject.SetActive(flag2);
+@@ -2105,18 +2218,37 @@
+ 				{
+ 					int num3 = occupiedSlots[num2];
+ 					VillageSaveMetadata villageSaveMetadata = VillageSaveService.ReadMetadata(num3);
+-					saveSlotUiBinding.title.text = "存档 " + (num3 + 1);
+-					saveSlotUiBinding.meta.text = VillageTime.FormatDay(villageSaveMetadata.tick) + " · 威信 " + villageSaveMetadata.prestige + " · " + villageSaveMetadata.population + " 人 · 税库 " + villageSaveMetadata.treasuryGold + "\n" + FormatDate(villageSaveMetadata.updatedAtUtc) + " · " + villageSaveMetadata.summary;
+-					saveSlotUiBinding.status.text = (villageSaveMetadata.corrupted ? "损坏" : "切换到此存档");
+-					saveSlotUiBinding.accent.color = (villageSaveMetadata.corrupted ? new Color32(201, 79, 67, byte.MaxValue) : new Color32(121, 168, 95, byte.MaxValue));
++					if (saveSlotUiBinding.title != null)
++					{
++						saveSlotUiBinding.title.text = "存档 " + (num3 + 1);
++					}
++					if (saveSlotUiBinding.meta != null)
++					{
++						saveSlotUiBinding.meta.text = VillageTime.FormatDay(villageSaveMetadata.tick) + " · 威信 " + villageSaveMetadata.prestige + " · " + villageSaveMetadata.population + " 人 · 税库 " + villageSaveMetadata.treasuryGold + "\n" + FormatDate(villageSaveMetadata.updatedAtUtc) + " · " + villageSaveMetadata.summary;
++					}
++					if (saveSlotUiBinding.status != null)
++					{
++						saveSlotUiBinding.status.text = (villageSaveMetadata.corrupted ? "损坏" : "切换到此存档");
++					}
++					if (saveSlotUiBinding.accent != null)
++					{
++						saveSlotUiBinding.accent.color = (villageSaveMetadata.corrupted ? new Color32(201, 79, 67, byte.MaxValue) : new Color32(121, 168, 95, byte.MaxValue));
++					}
+ 					saveSlotUiBinding.primaryButton.interactable = true;
+-					saveSlotUiBinding.deleteButton.gameObject.SetActive(value: true);
++					if (saveSlotUiBinding.deleteButton != null)
++					{
++						saveSlotUiBinding.deleteButton.gameObject.SetActive(value: true);
++					}
+ 				}
+ 			}
+ 		}
+ 
+ 		private int GetDisplayedSlot(int displayIndex)
+ 		{
++			if (slots == null || slots.Length == 0)
++			{
++				return -1;
++			}
+ 			int[] occupiedSlots = VillageSaveService.GetOccupiedSlots();
+ 			int num = _page * slots.Length + displayIndex;
+ 			return (num >= 0 && num < occupiedSlots.Length) ? occupiedSlots[num] : (-1);
+@@ -2125,9 +2257,18 @@
+ 		private void RefreshSettings()
+ 		{
+ 			GameSession.Initialize();
+-			volumeLabel.text = GameSession.Settings.masterVolumePercent + "%";
+-			fullscreenLabel.text = (GameSession.Settings.fullscreen ? "全屏：开" : "全屏：关");
+-			animationsLabel.text = (GameSession.Settings.animationsEnabled ? "动效：开" : "动效：关");
++			if (volumeLabel != null)
++			{
++				volumeLabel.text = GameSession.Settings.masterVolumePercent + "%";
++			}
++			if (fullscreenLabel != null)
++			{
++				fullscreenLabel.text = (GameSession.Settings.fullscreen ? "全屏：开" : "全屏：关");
++			}
++			if (animationsLabel != null)
++			{
++				animationsLabel.text = (GameSession.Settings.animationsEnabled ? "动效：开" : "动效：关");
++			}
+ 		}
+ 
+ 		private string FormatDate(string utc)
+@@ -2765,7 +2906,9 @@
+ 			int num = (int)((save.monthSamples > 0) ? (save.hungerSum / save.monthSamples) : 0);
+ 			if (save.runMode < 0)
+ 			{
+-				stringBuilder.AppendLine("结算方式\u3000手动 / 绝户");
++				stringBuilder.AppendLine("结算方式　手动 / 人口归零");
++				stringBuilder.AppendLine("等级　" + RunRules.GradeLetter(save.grade) + " · 总评 " + RunRules.TotalScore(save) + " / 100");
++				stringBuilder.AppendLine("人年　" + save.personMonths / 12 + " · 平均饥饿 " + num + " · 饥荒 " + save.famineMonths + " 月");
+ 			}
+ 			else if (flag)
+ 			{
+@@ -3628,6 +3771,12 @@
+ 
+ 		private float _settlePendingUntil;
+ 
++		private bool _runModeChosen;
++
++		private float _modePromptTimer;
++
++		private float _modeNoUiTimer;
++
+ 		private static readonly (uint mark, string name)[] ProfessionNames = new (uint, string)[13]
+ 		{
+ 			(1u, "罪人"),
+@@ -3688,18 +3837,17 @@
+ 			ResolvePauseReferences();
+ 			ApplySessionState();
+ 			VillageSaveData currentSave = GameSession.CurrentSave;
+-			if (currentSave != null && currentSave.tick == 0 && currentSave.runMode < 0)
++			_runModeChosen = currentSave == null || currentSave.tick > 0 || currentSave.runMode >= 0;
++			if (!_runModeChosen && Application.isMobilePlatform)
+ 			{
+-				if (Application.isMobilePlatform)
+-				{
+-					currentSave.runMode = 0;
+-					GameSession.SaveCurrent();
+-					ShowMessage("五十年模式（移动端默认）", obituary: false, 4f);
+-				}
+-				else
+-				{
+-					ShowSubtitle(0, 6f, "新的一局：按 1 = 五十年 · 按 2 = 高压（不选则继续沙盒）");
+-				}
++				currentSave.runMode = 0;
++				_runModeChosen = true;
++				GameSession.SaveCurrent();
++				ShowMessage("五十年模式（移动端默认）", obituary: false, 4f);
++			}
++			else if (!_runModeChosen)
++			{
++				_modePromptTimer = 0f;
+ 			}
+ 		}
+ 
+@@ -3726,20 +3874,51 @@
+ 		private void HandleRunModeChoice()
+ 		{
+ 			VillageSaveData currentSave = GameSession.CurrentSave;
+-			if (currentSave != null && currentSave.tick == 0 && currentSave.runMode < 0)
++			if (currentSave == null || _runModeChosen)
+ 			{
+-				if (Input.GetKeyDown(KeyCode.Alpha1))
+-				{
+-					currentSave.runMode = 0;
+-					GameSession.SaveCurrent();
+-					ShowMessage("五十年模式：50 年后按人年与温饱结算 S–F", obituary: false, 4f);
+-				}
+-				else if (Input.GetKeyDown(KeyCode.Alpha2))
++				return;
++			}
++			if (Input.GetKeyDown(KeyCode.Alpha1))
++			{
++				currentSave.runMode = 0;
++				_runModeChosen = true;
++				GameSession.SaveCurrent();
++				ShowMessage("五十年模式：50 年后按人年与温饱结算 S–F", obituary: false, 4f);
++				return;
++			}
++			if (Input.GetKeyDown(KeyCode.Alpha2))
++			{
++				currentSave.runMode = 1;
++				_runModeChosen = true;
++				GameSession.SaveCurrent();
++				ShowMessage("高压模式：村力连续 20 年不低于 45 即通关", obituary: false, 4f);
++				return;
++			}
++			if (Input.GetKeyDown(KeyCode.Alpha3))
++			{
++				currentSave.runMode = -1;
++				_runModeChosen = true;
++				GameSession.SaveCurrent();
++				ShowMessage("沙盒模式：无 50 年期限，人口归零结束，可随时手动结算", obituary: false, 4f);
++				return;
++			}
++			if (subtitleText == null || subtitleCanvasGroup == null)
++			{
++				_modeNoUiTimer += Time.unscaledDeltaTime;
++				if (_modeNoUiTimer >= 10f)
+ 				{
+-					currentSave.runMode = 1;
++					currentSave.runMode = -1;
++					_runModeChosen = true;
+ 					GameSession.SaveCurrent();
+-					ShowMessage("高压模式：村力连续 20 年不低于 45 即通关", obituary: false, 4f);
++					UnityEngine.Debug.LogWarning("Mode prompt UI missing; defaulting to sandbox.");
+ 				}
++				return;
++			}
++			_modePromptTimer -= Time.unscaledDeltaTime;
++			if (_modePromptTimer <= 0f)
++			{
++				_modePromptTimer = 4f;
++				ShowSubtitle(0, 4f, "开局选择：按 1 = 五十年 · 按 2 = 高压 · 按 3 = 沙盒（人口归零结束）");
+ 			}
+ 		}
+ 
+@@ -3905,9 +4084,10 @@
+ 				{
+ 					lawOrderLabels[i].text = "第 " + (i + 1) + " 条";
+ 				}
++				bool flag2 = currentSave != null && currentSave.lawStrength != null && i >= 0 && i < currentSave.lawStrength.Length && currentSave.lawStrength[i] <= -100;
+ 				if (lawNameLabels != null && i < lawNameLabels.Length && lawNameLabels[i] != null)
+ 				{
+-					lawNameLabels[i].text = ((lawDefinition == null) ? "空置" : lawDefinition.name);
++					lawNameLabels[i].text = ((lawDefinition == null) ? "空置" : (flag2 ? (lawDefinition.name + "（已废止）") : lawDefinition.name));
+ 				}
+ 				if (lawConditionLabels != null && i < lawConditionLabels.Length && lawConditionLabels[i] != null)
+ 				{
+@@ -3915,7 +4095,7 @@
+ 				}
+ 				if (lawEffectLabels != null && i < lawEffectLabels.Length && lawEffectLabels[i] != null)
+ 				{
+-					lawEffectLabels[i].text = ((lawDefinition == null) ? "点击选择法律" : lawDefinition.effect);
++					lawEffectLabels[i].text = ((lawDefinition == null) ? "点击选择法律" : (flag2 ? "已废止（不生效）" : lawDefinition.effect));
+ 				}
+ 				if (lawDeathLabels != null && i < lawDeathLabels.Length && lawDeathLabels[i] != null)
+ 				{
+@@ -3936,7 +4116,7 @@
+ 		private void UpdateSimulation()
+ 		{
+ 			VillageSaveData currentSave = GameSession.CurrentSave;
+-			if (currentSave == null || GameTimePause.IsPaused || Time.timeScale <= 0f)
++			if (currentSave == null || !_runModeChosen || GameTimePause.IsPaused || Time.timeScale <= 0f)
+ 			{
+ 				return;
+ 			}
+@@ -4225,14 +4405,16 @@
+ 			if (save.runMode == 1)
+ 			{
+ 				int num = RunRules.HealthyPop(save) * 2;
+-				return "高压 · 村力 " + num + " / 45 · 维持 " + save.vStreak / 12 + " 年";
++				int num2 = save.vStreak / 12;
++				int num3 = save.vStreak % 12;
++				return "高压 " + num + "/45 · 维持 " + num2 + "年" + num3 + "月";
+ 			}
+ 			if (save.runMode == 0)
+ 			{
+-				int num2 = RunRules.TotalScore(save);
+-				return "五十年 · " + VillageTime.ToYear(save.tick) + " 年 · 总评 " + num2 + " " + RunRules.GradeLetter(RunRules.Grade(save));
++				int num4 = RunRules.TotalScore(save);
++				return "五十年 " + VillageTime.ToYear(save.tick) + "年 · " + num4 + " " + RunRules.GradeLetter(RunRules.Grade(save));
+ 			}
+-			return save.tyrantMode ? "运转中 · 暴政" : "运转中";
++			return "沙盒 · 人口归零结束";
+ 		}
+ 
+ 		private static string BuildHungriest(VillageSaveData save)
+@@ -4306,11 +4488,18 @@
+ 				return "致死 —";
+ 			}
+ 			string text = "致死 " + ((slot < _lawDeathCounts.Length) ? _lawDeathCounts[slot] : 0) + " 人";
+-			if (save != null && slot < save.lawStrength.Length && save.lawStrength[slot] > 1)
++			if (save != null && save.lawStrength != null && slot >= 0 && slot < save.lawStrength.Length)
+ 			{
+-				text = text + " · 强度 " + save.lawStrength[slot];
++				if (save.lawStrength[slot] <= -100)
++				{
++					text = "【已废止】" + text;
++				}
++				else if (save.lawStrength[slot] != 0)
++				{
++					text = text + " · 强度 " + save.lawStrength[slot];
++				}
+ 			}
+-			if (save != null && slot < save.lawCooldown.Length && save.lawCooldown[slot] > 0)
++			if (save != null && save.lawCooldown != null && slot < save.lawCooldown.Length && save.lawCooldown[slot] > 0)
+ 			{
+ 				text = text + " · 冷却 " + save.lawCooldown[slot] / 8 + " 天";
+ 			}
+@@ -4603,6 +4792,136 @@
+ 
+ 		private static bool _runningDeathEffects;
+ 
++		private static bool _snapValid;
++
++		private static int[] _snapAlive;
++
++		private static int[] _snapHunger;
++
++		private static int[] _snapFear;
++
++		private static int[] _snapGold;
++
++		private static int[] _snapFood;
++
++		private static int[] _snapChildren;
++
++		private static int[] _snapAge;
++
++		private static int[] _snapGender;
++
++		private static int[] _snapBirthCooldown;
++
++		private static int _snapGranary;
++
++		private static int _snapTreasury;
++
++		private static int _snapPrestige;
++
++		private static int _snapTotalDeaths;
++
++		private static int _snapTotalBirths;
++
++		private static int _snapInfantDeaths;
++
++		private static int _snapObituaryCount;
++
++		private static void SnapshotGuardState(VillageSaveData d)
++		{
++			if (d == null || d.villagerAlive == null || d.villagerHunger == null || d.villagerFear == null || d.villagerGold == null || d.villagerFood == null || d.villagerChildren == null || d.villagerAges == null || d.villagerGenders == null || d.villagerBirthCooldown == null)
++			{
++				_snapValid = false;
++				return;
++			}
++			int num = d.villagerAlive.Length;
++			if (_snapHunger == null || _snapHunger.Length != num)
++			{
++				_snapAlive = new int[num];
++				_snapHunger = new int[num];
++				_snapFear = new int[num];
++				_snapGold = new int[num];
++				_snapFood = new int[num];
++				_snapChildren = new int[num];
++				_snapAge = new int[num];
++				_snapGender = new int[num];
++				_snapBirthCooldown = new int[num];
++			}
++			for (int i = 0; i < num; i++)
++			{
++				_snapAlive[i] = (d.villagerAlive[i] ? 1 : 0);
++				_snapHunger[i] = d.villagerHunger[i];
++				_snapFear[i] = d.villagerFear[i];
++				_snapGold[i] = d.villagerGold[i];
++				_snapFood[i] = d.villagerFood[i];
++				_snapChildren[i] = d.villagerChildren[i];
++				_snapAge[i] = d.villagerAges[i];
++				_snapGender[i] = d.villagerGenders[i];
++				_snapBirthCooldown[i] = d.villagerBirthCooldown[i];
++			}
++			_snapGranary = d.granaryFood;
++			_snapTreasury = d.treasuryGold;
++			_snapPrestige = d.prestige;
++			_snapTotalDeaths = d.totalDeaths;
++			_snapTotalBirths = d.totalBirths;
++			_snapInfantDeaths = CountObituaries(d, infantOnly: true);
++			_snapObituaryCount = d.obituaryCount;
++			_snapValid = true;
++		}
++
++		private static int ReadGuardField(VillageSaveData d, int i, LawField field)
++		{
++			if (!_snapValid || _snapHunger == null || i < 0 || i >= _snapHunger.Length)
++			{
++				return ReadField(d, i, field);
++			}
++			switch (field)
++			{
++			case LawField.Hunger:
++				return _snapHunger[i];
++			case LawField.Fear:
++				return _snapFear[i];
++			case LawField.Gold:
++				return _snapGold[i];
++			case LawField.Food:
++				return _snapFood[i];
++			case LawField.Children:
++				return _snapChildren[i];
++			case LawField.Age:
++				return _snapAge[i];
++			case LawField.Gender:
++				return _snapGender[i];
++			case LawField.Alive:
++				return _snapAlive[i];
++			case LawField.BirthCooldown:
++				return _snapBirthCooldown[i];
++			case LawField.Granary:
++				return _snapGranary;
++			case LawField.Treasury:
++				return _snapTreasury;
++			case LawField.Prestige:
++				return _snapPrestige;
++			case LawField.TotalDeaths:
++				return _snapTotalDeaths;
++			case LawField.TotalBirths:
++				return _snapTotalBirths;
++			case LawField.InfantDeaths:
++				return _snapInfantDeaths;
++			case LawField.ObituaryCount:
++				return _snapObituaryCount;
++			default:
++				return ReadField(d, i, field);
++			}
++		}
++
++		private static bool IsGuardAlive(VillageSaveData d, int i)
++		{
++			if (_snapValid && i >= 0 && i < _snapAlive.Length)
++			{
++				return _snapAlive[i] != 0;
++			}
++			return d != null && d.villagerAlive != null && i >= 0 && i < d.villagerAlive.Length && d.villagerAlive[i];
++		}
++
+ 		public static LawTickResult Tick(VillageSaveData data, int tick, int deathsThisTick)
+ 		{
+ 			LawTickResult result = default;
+@@ -4613,6 +4932,7 @@
+ 			EnsureRuntimeArrays(data);
+ 			int aliveCount = VillageLifecycleService.CountAlive(data);
+ 			EnsureDeathMarks(data);
++			int deathsSeen = deathsThisTick;
+ 			int num = Math.Min(data.lawIds.Length, data.lawCooldown.Length);
+ 			for (int i = 0; i < num; i++)
+ 			{
+@@ -4622,7 +4942,7 @@
+ 					continue;
+ 				}
+ 				LawDefinition lawDefinition = LawCatalog.FindById(num2);
+-				if (lawDefinition == null || lawDefinition.effects == null || lawDefinition.effects.Length == 0 || HasOnDeathTrigger(lawDefinition))
++				if (lawDefinition == null || lawDefinition.effects == null || lawDefinition.effects.Length == 0 || HasOnDeathTrigger(lawDefinition) || LawStrengthValue(data, num2) <= -100)
+ 				{
+ 					continue;
+ 				}
+@@ -4631,14 +4951,23 @@
+ 					data.lawCooldown[i]--;
+ 					continue;
+ 				}
++				SnapshotGuardState(data);
+ 				bool flag = false;
++				bool globalLaw = IsGlobalLaw(lawDefinition);
++				int aliveNow = VillageLifecycleService.CountAlive(data);
+ 				for (int j = 0; j < data.villagerAlive.Length; j++)
+ 				{
+-					if (data.villagerAlive[j] && AllCondsPass(data, j, i, lawDefinition, tick, aliveCount, deathsThisTick))
++					if (data.villagerAlive[j] && AllCondsPass(data, j, i, lawDefinition, tick, aliveNow, deathsSeen))
+ 					{
++						int deathsBefore = result.deaths;
+ 						ApplyAll(data, j, i, lawDefinition, tick, !flag, ref result);
++						deathsSeen += result.deaths - deathsBefore;
+ 						VillagerProfessions.OnLawFired(data, j, lawDefinition.id);
+ 						flag = true;
++						if (globalLaw)
++						{
++							break;
++						}
+ 					}
+ 				}
+ 				if (flag && lawDefinition.cooldown > 0)
+@@ -4651,6 +4980,7 @@
+ 
+ 		public static void BeginTick(VillageSaveData data)
+ 		{
++			_snapValid = false;
+ 			EnsureDeathMarks(data);
+ 			for (int i = 0; i < _deathMarks.Length; i++)
+ 			{
+@@ -4682,7 +5012,7 @@
+ 					if (num > 0)
+ 					{
+ 						LawDefinition lawDefinition = LawCatalog.FindById(num);
+-						if (lawDefinition != null && lawDefinition.effects != null && lawDefinition.effects.Length != 0 && HasOnDeathTrigger(lawDefinition) && AllCondsPass(data, deadIndex, i, lawDefinition, data.tick, aliveCount, 0))
++						if (lawDefinition != null && lawDefinition.effects != null && lawDefinition.effects.Length != 0 && HasOnDeathTrigger(lawDefinition) && LawEngine.IsLawActive(data, num) && AllCondsPass(data, deadIndex, i, lawDefinition, data.tick, aliveCount, 0))
+ 						{
+ 							LawTickResult result = default;
+ 							ApplyAll(data, deadIndex, i, lawDefinition, data.tick, firstTrigger: true, ref result);
+@@ -4777,6 +5107,56 @@
+ 			}
+ 		}
+ 
++		private static bool IsSharedOrTotalField(LawField field)
++		{
++			switch (field)
++			{
++			case LawField.Granary:
++			case LawField.Treasury:
++			case LawField.Prestige:
++			case LawField.TotalDeaths:
++			case LawField.TotalBirths:
++			case LawField.InfantDeaths:
++			case LawField.ObituaryCount:
++				return true;
++			default:
++				return false;
++			}
++		}
++
++		private static bool IsGlobalCond(LawCond cond)
++		{
++			switch ((LawCondKind)cond.kind)
++			{
++			case LawCondKind.SelfGt:
++			case LawCondKind.SelfLt:
++			case LawCondKind.SelfEq:
++				return IsSharedOrTotalField((LawField)cond.field);
++			case LawCondKind.NeighborGt:
++			case LawCondKind.NeighborRelative:
++			case LawCondKind.NeighborDiedThisTick:
++				return false;
++			default:
++				return true;
++			}
++		}
++
++		private static bool IsGlobalLaw(LawDefinition def)
++		{
++			if (def.conds == null || def.conds.Length == 0)
++			{
++				return true;
++			}
++			for (int i = 0; i < def.conds.Length; i++)
++			{
++				if (!IsGlobalCond(def.conds[i]))
++				{
++					return false;
++				}
++			}
++			return true;
++		}
++
+ 		private static bool AllCondsPass(VillageSaveData d, int i, int slot, LawDefinition def, int tick, int aliveCount, int deathsThisTick)
+ 		{
+ 			if (def.conds == null || def.conds.Length == 0)
+@@ -4865,13 +5245,26 @@
+ 
+ 		private static void ApplyEffect(VillageSaveData d, int i, int slot, LawEffect e, int tick, bool firstTrigger, ref LawTickResult result)
+ 		{
+-			if ((e.chance < 100 && !Rng.Chance(d.rngSeed, tick, 7000 + slot * 97 + e.kind, e.chance)) || !GuardPasses(d, i, e))
++			if (e.chance < 100 && !Rng.Chance(d.rngSeed, tick, 7000 + slot * 97 + e.kind, e.chance))
+ 			{
+ 				return;
+ 			}
+ 			LawEffectKind kind = (LawEffectKind)e.kind;
+ 			LawScope scope = (LawScope)e.scope;
+ 			LawField field = (LawField)e.field;
++			bool perTargetGuard = scope == LawScope.All || scope == LawScope.Neighbors;
++			bool sharedScope = scope == LawScope.Granary || scope == LawScope.Treasury || scope == LawScope.Prestige;
++			if (sharedScope && e.guardField != byte.MaxValue && IsPerVillagerField((LawField)e.guardField))
++			{
++				if (!AnyAliveGuardPasses(d, e))
++				{
++					return;
++				}
++			}
++			else if (!perTargetGuard && !GuardPasses(d, i, e))
++			{
++				return;
++			}
+ 			int num = Scale(d, slot, e.amount);
+ 			switch (kind)
+ 			{
+@@ -4879,29 +5272,29 @@
+ 				if (firstTrigger || !IsSharedScope(scope))
+ 				{
+ 					int num3 = ((d.lawIds != null && slot >= 0 && slot < d.lawIds.Length) ? d.lawIds[slot] : 0);
+-					AddToScope(d, i, scope, field, num, num3 != 4);
++					AddToScope(d, i, scope, field, num, num3 != 4, e);
+ 				}
+ 				break;
+ 			case LawEffectKind.SetField:
+-				SetInScope(d, i, scope, field, num);
++				SetInScope(d, i, scope, field, num, e);
+ 				break;
+ 			case LawEffectKind.Move:
+ 				MoveToSelf(d, i, scope, field, (Math.Abs(num) == 0) ? 1 : Math.Abs(num));
+ 				break;
+ 			case LawEffectKind.Drain:
+-				DrainFromSelf(d, i, scope, field, (Math.Abs(num) == 0) ? 1 : Math.Abs(num));
++				DrainFromSelf(d, i, scope, field, (Math.Abs(num) == 0) ? 1 : Math.Abs(num), e);
+ 				break;
+ 			case LawEffectKind.Steal:
+ 				StealFromNeighbors(d, i, field, num);
+ 				break;
+ 			case LawEffectKind.FillTo:
+-				FillTo(d, i, scope, field, Math.Abs(num), e.extra);
++				FillTo(d, i, scope, field, Math.Abs(num), e.extra, e);
+ 				break;
+ 			case LawEffectKind.ModifyBirthCd:
+-				ModifyBirthCooldown(d, i, scope, (num == 0) ? 1 : num);
++				ModifyBirthCooldown(d, i, scope, (num == 0) ? 1 : num, e);
+ 				break;
+ 			case LawEffectKind.BroadcastFrom:
+-				Broadcast(d, i, field, num);
++				Broadcast(d, i, field, num, e);
+ 				break;
+ 			case LawEffectKind.KillSelf:
+ 				if (VillageLifecycleService.KillByLaw(d, i, "律法", slot))
+@@ -4929,15 +5322,27 @@
+ 				break;
+ 			}
+ 			case LawEffectKind.ModifyLawStrength:
+-				ModifyStrengthByLawId(d, (int)field, e.amount);
++				ModifyStrengthByLawId(d, (int)field, num);
++				break;
++			case LawEffectKind.BoostOtherLaws:
++				BoostOtherLaws(d, slot, num);
+ 				break;
+ 			case LawEffectKind.DisableLaw:
+-				ModifyStrengthByLawId(d, (int)field, -100);
++				DisableLawById(d, (int)field);
+ 				break;
++			case LawEffectKind.DisableStrongestLaw:
++			{
++				string text = DisableStrongestLaw(d, slot);
++				if (!string.IsNullOrEmpty(text))
++				{
++					result.eventText = "『" + text + "』被赦令废止。";
++				}
++				break;
++			}
+ 			}
+ 		}
+ 
+-		private static void AddToScope(VillageSaveData d, int i, LawScope scope, LawField field, int amount, bool scaleFear)
++		private static void AddToScope(VillageSaveData d, int i, LawScope scope, LawField field, int amount, bool scaleFear, LawEffect e)
+ 		{
+ 			switch (scope)
+ 			{
+@@ -4953,6 +5358,10 @@
+ 			}
+ 			ForEachTarget(d, i, scope, (int target) =>
+ 			{
++				if (!TargetGuardPasses(d, target, e))
++				{
++					return;
++				}
+ 				if (scaleFear && field == LawField.Fear && amount > 0)
+ 				{
+ 					Traits.AddFear(d, target, amount);
+@@ -4964,7 +5373,7 @@
+ 			});
+ 		}
+ 
+-		private static void SetInScope(VillageSaveData d, int i, LawScope scope, LawField field, int amount)
++		private static void SetInScope(VillageSaveData d, int i, LawScope scope, LawField field, int amount, LawEffect e)
+ 		{
+ 			switch (scope)
+ 			{
+@@ -4980,7 +5389,10 @@
+ 			}
+ 			ForEachTarget(d, i, scope, (int target) =>
+ 			{
+-				WriteField(d, target, field, amount);
++				if (TargetGuardPasses(d, target, e))
++				{
++					WriteField(d, target, field, amount);
++				}
+ 			});
+ 		}
+ 
+@@ -5010,7 +5422,7 @@
+ 			}
+ 		}
+ 
+-		private static void DrainFromSelf(VillageSaveData d, int i, LawScope target, LawField field, int amount)
++		private static void DrainFromSelf(VillageSaveData d, int i, LawScope target, LawField field, int amount, LawEffect e)
+ 		{
+ 			int num = ReadField(d, i, field);
+ 			int num2 = Math.Min(num, amount);
+@@ -5030,7 +5442,7 @@
+ 			case LawScope.Neighbors:
+ 			{
+ 				int num3 = NeighborNext(d, i);
+-				if (num3 >= 0)
++				if (num3 >= 0 && TargetGuardPasses(d, num3, e))
+ 				{
+ 					WriteField(d, num3, field, ReadField(d, num3, field) + num2);
+ 				}
+@@ -5054,36 +5466,45 @@
+ 			}
+ 		}
+ 
+-		private static void FillTo(VillageSaveData d, int i, LawScope scope, LawField field, int amount, int cap)
++		private static void FillTo(VillageSaveData d, int i, LawScope scope, LawField field, int amount, int cap, LawEffect e)
+ 		{
+ 			if (scope == LawScope.Granary || scope == LawScope.Treasury || scope == LawScope.Prestige)
+ 			{
+ 				int num = ReadShared(d, field);
+ 				int val = ((cap > 0) ? cap : amount);
+-				SetInScope(d, i, scope, field, Math.Min(val, num + amount));
++				SetInScope(d, i, scope, field, Math.Min(val, num + amount), e);
+ 				return;
+ 			}
+ 			ForEachTarget(d, i, scope, (int target) =>
+ 			{
+-				int num2 = ReadField(d, target, field);
+-				int val2 = ((cap > 0) ? cap : (num2 + amount));
+-				WriteField(d, target, field, Math.Min(val2, num2 + amount));
++				if (TargetGuardPasses(d, target, e))
++				{
++					int num2 = ReadField(d, target, field);
++					int val2 = ((cap > 0) ? cap : (num2 + amount));
++					WriteField(d, target, field, Math.Min(val2, num2 + amount));
++				}
+ 			});
+ 		}
+ 
+-		private static void ModifyBirthCooldown(VillageSaveData d, int i, LawScope scope, int amount)
++		private static void ModifyBirthCooldown(VillageSaveData d, int i, LawScope scope, int amount, LawEffect e)
+ 		{
+ 			ForEachTarget(d, i, scope, (int target) =>
+ 			{
+-				d.villagerBirthCooldown[target] = Math.Max(0, d.villagerBirthCooldown[target] + amount);
++				if (TargetGuardPasses(d, target, e))
++				{
++					d.villagerBirthCooldown[target] = Math.Max(0, d.villagerBirthCooldown[target] + amount);
++				}
+ 			});
+ 		}
+ 
+-		private static void Broadcast(VillageSaveData d, int i, LawField field, int amount)
++		private static void Broadcast(VillageSaveData d, int i, LawField field, int amount, LawEffect e)
+ 		{
+ 			ForEachTarget(d, i, LawScope.All, (int target) =>
+ 			{
+-				WriteField(d, target, field, ReadField(d, target, field) + amount);
++				if (TargetGuardPasses(d, target, e))
++				{
++					WriteField(d, target, field, ReadField(d, target, field) + amount);
++				}
+ 			});
+ 		}
+ 
+@@ -5103,6 +5524,67 @@
+ 			}
+ 		}
+ 
++		private static void DisableLawById(VillageSaveData d, int lawId)
++		{
++			if (d.lawIds == null || d.lawStrength == null)
++			{
++				return;
++			}
++			for (int i = 0; i < d.lawIds.Length && i < d.lawStrength.Length; i++)
++			{
++				if (d.lawIds[i] == lawId)
++				{
++					d.lawStrength[i] = -100;
++					break;
++				}
++			}
++		}
++
++		private static void BoostOtherLaws(VillageSaveData d, int slot, int amount)
++		{
++			if (d.lawIds == null || d.lawStrength == null)
++			{
++				return;
++			}
++			int num = ((slot >= 0 && slot < d.lawIds.Length) ? d.lawIds[slot] : 0);
++			for (int i = 0; i < d.lawIds.Length && i < d.lawStrength.Length; i++)
++			{
++				if (d.lawIds[i] > 0 && d.lawIds[i] != num)
++				{
++					ModifyStrength(d, i, amount);
++				}
++			}
++		}
++
++		private static string DisableStrongestLaw(VillageSaveData d, int currentSlot)
++		{
++			if (d.lawIds == null || d.lawStrength == null)
++			{
++				return null;
++			}
++			int num = -1;
++			int num2 = int.MinValue;
++			for (int i = 0; i < d.lawIds.Length && i < d.lawStrength.Length; i++)
++			{
++				if (i == currentSlot || d.lawIds[i] <= 0 || d.lawStrength[i] <= -100)
++				{
++					continue;
++				}
++				if (d.lawStrength[i] > num2)
++				{
++					num2 = d.lawStrength[i];
++					num = i;
++				}
++			}
++			if (num < 0)
++			{
++				return null;
++			}
++			d.lawStrength[num] = -100;
++			LawDefinition lawDefinition = LawCatalog.FindById(d.lawIds[num]);
++			return (lawDefinition != null) ? lawDefinition.name : null;
++		}
++
+ 		private static int CountBelow(VillageSaveData d, LawField field, int threshold)
+ 		{
+ 			int num = 0;
+@@ -5120,6 +5602,10 @@
+ 		{
+ 			if (d.lawStrength != null && slot >= 0 && slot < d.lawStrength.Length)
+ 			{
++				if (d.lawStrength[slot] <= -100 && amount > 0)
++				{
++					return;
++				}
+ 				d.lawStrength[slot] = Math.Max(-100, Math.Min(100, d.lawStrength[slot] + amount));
+ 			}
+ 		}
+@@ -5132,7 +5618,16 @@
+ 			}
+ 			int val = ((d.lawStrength != null && slot >= 0 && slot < d.lawStrength.Length) ? d.lawStrength[slot] : 0);
+ 			int num = 100 + Math.Max(-100, Math.Min(100, val));
+-			return amount * num / 100;
++			if (num <= 0)
++			{
++				return 0;
++			}
++			int num2 = amount * num / 100;
++			if (amount > 0 && num2 < 1)
++			{
++				num2 = 1;
++			}
++			return num2;
+ 		}
+ 
+ 		private static bool GuardPasses(VillageSaveData d, int i, LawEffect e)
+@@ -5141,10 +5636,55 @@
+ 			{
+ 				return true;
+ 			}
+-			int num = ReadField(d, i, (LawField)e.guardField);
++			int num = ReadGuardField(d, i, (LawField)e.guardField);
+ 			return (e.guardOp == 0) ? (num >= e.guardValue) : (num < e.guardValue);
+ 		}
+ 
++		private static bool TargetGuardPasses(VillageSaveData d, int target, LawEffect e)
++		{
++			if (e.guardField == byte.MaxValue)
++			{
++				return true;
++			}
++			int num = ReadGuardField(d, target, (LawField)e.guardField);
++			return (e.guardOp == 0) ? (num >= e.guardValue) : (num < e.guardValue);
++		}
++
++		private static bool IsPerVillagerField(LawField field)
++		{
++			switch (field)
++			{
++			case LawField.Hunger:
++			case LawField.Fear:
++			case LawField.Gold:
++			case LawField.Food:
++			case LawField.Children:
++			case LawField.Age:
++			case LawField.Gender:
++			case LawField.Alive:
++			case LawField.BirthCooldown:
++				return true;
++			default:
++				return false;
++			}
++		}
++
++		private static bool AnyAliveGuardPasses(VillageSaveData d, LawEffect e)
++		{
++			if (d == null || d.villagerAlive == null)
++			{
++				return false;
++			}
++			for (int i = 0; i < d.villagerAlive.Length; i++)
++			{
++				if (IsGuardAlive(d, i) && TargetGuardPasses(d, i, e))
++				{
++					return true;
++				}
++			}
++			return false;
++		}
++
+ 		private static bool IsSharedScope(LawScope scope)
+ 		{
+ 			return scope == LawScope.Granary || scope == LawScope.Treasury || scope == LawScope.Prestige;
+@@ -5343,18 +5883,44 @@
+ 			};
+ 		}
+ 
+-		private static bool HasLaw(VillageSaveData d, int lawId)
++		public static int LawStrengthValue(VillageSaveData d, int lawId)
++		{
++			if (d == null || d.lawIds == null || d.lawStrength == null)
++			{
++				return 0;
++			}
++			for (int i = 0; i < d.lawIds.Length && i < d.lawStrength.Length; i++)
++			{
++				if (d.lawIds[i] == lawId)
++				{
++					return Math.Max(-100, Math.Min(100, d.lawStrength[i]));
++				}
++			}
++			return 0;
++		}
++
++		public static bool IsLawActive(VillageSaveData d, int lawId)
+ 		{
++			if (d == null || d.prestigeSuspended || d.lawIds == null)
++			{
++				return false;
++			}
+ 			for (int i = 0; i < d.lawIds.Length; i++)
+ 			{
+ 				if (d.lawIds[i] == lawId)
+ 				{
+-					return true;
++					int num = ((d.lawStrength != null && i < d.lawStrength.Length) ? d.lawStrength[i] : 0);
++					return num > -100;
+ 				}
+ 			}
+ 			return false;
+ 		}
+ 
++		private static bool HasLaw(VillageSaveData d, int lawId)
++		{
++			return IsLawActive(d, lawId);
++		}
++
+ 		private static int ReadField(VillageSaveData d, int i, LawField field)
+ 		{
+ 			if (i < 0 || i >= d.villagerAlive.Length)
+@@ -5548,7 +6114,7 @@
+ 
+ 		private static int SlotOf(VillageSaveData data, int lawId)
+ 		{
+-			if (data.prestigeSuspended || data.lawIds == null)
++			if (!LawEngine.IsLawActive(data, lawId))
+ 			{
+ 				return -1;
+ 			}
+@@ -5757,10 +6323,6 @@
+ 			}
+ 			else
+ 			{
+-				if (data.runMode < 0)
+-				{
+-					return;
+-				}
+ 				int num = VillageLifecycleService.CountAlive(data);
+ 				int num2 = AverageHunger(data);
+ 				data.personMonths += num;
+@@ -5770,6 +6332,10 @@
+ 				{
+ 					data.famineMonths++;
+ 				}
++				if (data.runMode < 0)
++				{
++					return;
++				}
+ 				if (data.runMode == 1)
+ 				{
+ 					int num3 = HealthyPop(data) * 2;
+@@ -5858,15 +6424,15 @@
+ 
+ 		public static int HealthyPop(VillageSaveData data)
+ 		{
+-			int num = 0;
++			long num = 0L;
+ 			for (int i = 0; i < data.villagerAlive.Length; i++)
+ 			{
+-				if (data.villagerAlive[i] && data.villagerHunger[i] < 50 && data.villagerFear[i] < 50)
++				if (data.villagerAlive[i])
+ 				{
+-					num++;
++					num += Math.Max(0, 100 - data.villagerHunger[i]);
+ 				}
+ 			}
+-			return num;
++			return (int)(num / 100);
+ 		}
+ 
+ 		private static int AverageHunger(VillageSaveData data)
+@@ -6395,7 +6961,7 @@
+ 					data.omenBurstTicks[i] = 0;
+ 					data.eventLastFire[num2] = tick;
+ 					Fire(data, num2, tick);
+-					eventText = Bursts[num2];
++					eventText = BuildBurstText(data, num2);
+ 					num++;
+ 				}
+ 			}
+@@ -6536,7 +7102,7 @@
+ 			case 3:
+ 				KillSome(data, Sk(flag4 ? 1 : 3, pct), infants: false, id);
+ 				data.prestige = Math.Max(0, data.prestige - Sk(30, pct));
+-				StealFood(data, 30);
++				StealFood(data, Sk(30, pct));
+ 				break;
+ 			case 4:
+ 				data.treasuryGold = Math.Max(0, data.treasuryGold - Sk(flag5 ? 75 : 150, pct));
+@@ -6544,7 +7110,7 @@
+ 				break;
+ 			case 5:
+ 				data.granaryFood = ClampGranary(data, data.granaryFood - Sk(data.granaryFood * (flag6 ? 10 : 20) / 100, pct));
+-				StealFood(data, 20);
++				StealFood(data, Sk(20, pct));
+ 				break;
+ 			case 6:
+ 			{
+@@ -6556,11 +7122,8 @@
+ 				{
+ 					if (data.villagerAlive[i] && data.villagerGold[i] > 0)
+ 					{
+-						data.villagerGold[i] -= data.villagerGold[i] / 5 + 1;
+-						if (data.villagerGold[i] < 0)
+-						{
+-							data.villagerGold[i] = 0;
+-						}
++						int num = (data.villagerGold[i] / 5 + 1) * pct / 100;
++						data.villagerGold[i] = Math.Max(0, data.villagerGold[i] - num);
+ 					}
+ 				}
+ 				AddFear(data, Sk(12, pct));
+@@ -6600,7 +7163,7 @@
+ 				break;
+ 			default:
+ 				data.birthBoomUntilTick = tick + 5840;
+-				data.birthBoomPercent = (flag8 ? 200 : 150);
++				data.birthBoomPercent = Sk(flag8 ? 200 : 150, pct);
+ 				AddFear(data, SkSigned(-10, pct));
+ 				break;
+ 			}
+@@ -6615,6 +7178,207 @@
+ 			}
+ 		}
+ 
++		private static string BuildBurstText(VillageSaveData data, int id)
++		{
++			string text = Bursts[id];
++			string text2 = null;
++			switch (id)
++			{
++			case 0:
++				if (EvHasLaw(data, 5))
++				{
++					text2 = "你写的『耕作』保住了半仓粮。";
++				}
++				else if (EvHasLaw(data, 71))
++				{
++					text2 = "你写的『开垦』多留了一份口粮。";
++				}
++				else if (Role(data, 1u))
++				{
++					text2 = "村里的耕者抢收了一季。";
++				}
++				break;
++			case 1:
++				if (EvHasLaw(data, 12))
++				{
++					text2 = "你写的『医药』拦下了一半。";
++				}
++				else if (EvHasLaw(data, 13))
++				{
++					text2 = "你写的『公共卫生』隔开了病户。";
++				}
++				else if (Role(data, 2u))
++				{
++					text2 = "村里的医师拦住了大半。";
++				}
++				break;
++			case 2:
++				if (EvHasLaw(data, 15))
++				{
++					text = "边患来了。你写的『兵役征召』把人挡在了村外，村里没有死人。";
++					text2 = null;
++				}
++				else if (EvHasLaw(data, 48))
++				{
++					text2 = "『威权』让边患更重了。";
++				}
++				else if (Role(data, 4u))
++				{
++					text = "边患来了。村里的游侠守住了村口，村里没有死人。";
++					text2 = null;
++				}
++				break;
++			case 3:
++				if (EvHasLaw(data, 6))
++				{
++					text2 = "你写的『安抚』压住了一半的怒火。";
++				}
++				else if (EvHasLaw(data, 1))
++				{
++					text2 = "你写的『济贫』救下了一些人。";
++				}
++				else if (EvHasLaw(data, 16))
++				{
++					text2 = "『连坐』让民变更重了。";
++				}
++				else if (Role(data, 8u))
++				{
++					text2 = "村里的里正劝住了众人。";
++				}
++				break;
++			case 4:
++				if (EvHasLaw(data, 14))
++				{
++					text2 = "你写的『盐铁专卖』堵住了账目。";
++				}
++				else if (Role(data, 16u))
++				{
++					text2 = "村里的账房查出了亏空。";
++				}
++				break;
++			case 5:
++				if (EvHasLaw(data, 30))
++				{
++					text2 = "你写的『屯粮』让寒潮少损失了一些粮。";
++				}
++				else if (Role(data, 32u))
++				{
++					text2 = "村里的役夫抢修了屋舍。";
++				}
++				break;
++			case 6:
++				if (EvHasLaw(data, 25))
++				{
++					text = "匪患掠过。你写的『雇佣护卫』赶走了匪徒，村里没有损失。";
++					text2 = null;
++				}
++				else if (EvHasLaw(data, 10))
++				{
++					text2 = "你写的『宵禁』让损失小了一些。";
++				}
++				else if (EvHasLaw(data, 2))
++				{
++					text2 = "『饥则抢』让匪患更重了。";
++				}
++				else if (Role(data, 4u))
++				{
++					text2 = "村里的游侠赶走了匪徒。";
++				}
++				break;
++			case 7:
++				if (EvHasLaw(data, 5))
++				{
++					text2 = "你写的『耕作』让粮仓更满。";
++				}
++				else if (Role(data, 1u))
++				{
++					text2 = "村里的耕者多收了一季。";
++				}
++				break;
++			case 8:
++				if (EvHasLaw(data, 29))
++				{
++					text2 = "你写的『平粜』做成了大买卖。";
++				}
++				else if (EvHasLaw(data, 31))
++				{
++					text2 = "你写的『售粮』换来了好价。";
++				}
++				else if (EvHasLaw(data, 14))
++				{
++					text2 = "『盐铁专卖』压低了商队的价。";
++				}
++				else if (Role(data, 64u))
++				{
++					text2 = "村里的粮商谈成了买卖。";
++				}
++				break;
++			case 9:
++				if (EvHasLaw(data, 28))
++				{
++					text2 = "你写的『捐纳』让乡绅多捐了一倍。";
++				}
++				else if (Role(data, 8u))
++				{
++					text2 = "村里的里正说动了乡绅。";
++				}
++				break;
++			case 10:
++				if (EvHasLaw(data, 17))
++				{
++					text2 = "你写的『流民法』让更多人流下来。";
++				}
++				else if (HasSettler(data))
++				{
++					text2 = "村里的徙民带来了同乡。";
++				}
++				break;
++			case 11:
++				if (EvHasLaw(data, 12))
++				{
++					text2 = "你写的『医药』请来了名医。";
++				}
++				else if (Role(data, 2u))
++				{
++					text2 = "村里的医师留住了名医。";
++				}
++				break;
++			case 12:
++				if (EvHasLaw(data, 35))
++				{
++					text2 = "你写的『祭祀』换来了大赦。";
++				}
++				else if (EvHasLaw(data, 6))
++				{
++					text2 = "你写的『安抚』让大赦更宽。";
++				}
++				else if (HasShaman(data))
++				{
++					text2 = "村里的巫祝求来了大赦。";
++				}
++				break;
++			default:
++				if (EvHasLaw(data, 8))
++				{
++					text2 = "你写的『婚育补贴』添了新生儿。";
++				}
++				else if (EvHasLaw(data, 9))
++				{
++					text2 = "你写的『幼童口粮』让新生儿活了下来。";
++				}
++				else if (Role(data, 128u))
++				{
++					text2 = "村里的稳婆接住了这一波。";
++				}
++				break;
++			}
++			if (!string.IsNullOrEmpty(text2))
++			{
++				text = text + text2;
++			}
++			return text;
++		}
++
+ 		private static int FreeSlot(VillageSaveData data)
+ 		{
+ 			for (int i = 0; i < 3; i++)
+@@ -6639,18 +7403,7 @@
+ 
+ 		private static bool EvHasLaw(VillageSaveData data, int lawId)
+ 		{
+-			if (data.prestigeSuspended || data.lawIds == null)
+-			{
+-				return false;
+-			}
+-			for (int i = 0; i < data.lawIds.Length; i++)
+-			{
+-				if (data.lawIds[i] == lawId)
+-				{
+-					return true;
+-				}
+-			}
+-			return false;
++			return LawEngine.IsLawActive(data, lawId);
+ 		}
+ 
+ 		private static int Avec(VillageSaveData data, int pct, int lawId, int p)
+@@ -7081,18 +7834,24 @@
+ 				int num4 = ResolveBirths(data, tick, ref report);
+ 				report.births += num4;
+ 			}
+-			if (tick > 0 && tick % 2400 == 0 && CountAlive(data) < 25 && data.granaryFood > 20)
++			if (tick > 0 && tick % 2400 == 0)
+ 			{
+-				for (int j = 0; j < 2; j++)
++				bool flowLaw = HasLaw(data, 17);
++				int num5 = 25;
++				int num6 = (flowLaw ? 3 : 2);
++				if (CountAlive(data) < num5 && data.granaryFood > 20)
+ 				{
+-					if (CountAlive(data) >= 25)
++					for (int j = 0; j < num6; j++)
+ 					{
+-						break;
++						if (CountAlive(data) >= num5)
++						{
++							break;
++						}
++						AppendImmigrant(data);
++						report.immigrants++;
+ 					}
+-					AppendImmigrant(data);
+-					report.immigrants++;
++					report.eventText = "有流民在村口停下了。";
+ 				}
+-				report.eventText = "有流民在村口停下了。";
+ 			}
+ 			if (tick > 0 && tick % 2400 == 0)
+ 			{
+@@ -7105,6 +7864,12 @@
+ 			{
+ 				report.eventText = eventText;
+ 			}
++			int eventDeaths = data.obituaryCount - obituaryCount - num2;
++			if (eventDeaths > 0)
++			{
++				report.deaths += eventDeaths;
++				num2 += eventDeaths;
++			}
+ 			if (tick > 0 && tick % 240 == 0)
+ 			{
+ 				RunRules.Tick(data, tick);
+@@ -7127,7 +7892,7 @@
+ 				int num5 = 0;
+ 				for (int k = 0; k < data.lawIds.Length; k++)
+ 				{
+-					if (data.lawIds[k] > 0)
++					if (data.lawIds[k] > 0 && (data.lawStrength == null || k >= data.lawStrength.Length || data.lawStrength[k] > -100))
+ 					{
+ 						num5++;
+ 					}
+@@ -7170,6 +7935,11 @@
+ 				data.lastPrestigeDelta = data.prestige - prestige;
+ 			}
+ 			data.tick = tick + 1;
++			if (data.runMode >= 0 && data.endKind == 0 && data.tick >= 146104)
++			{
++				data.endKind = 4;
++				data.grade = RunRules.Grade(data);
++			}
+ 			if (report.deaths > 0 || report.births > 0)
+ 			{
+ 				string eventText2;
+@@ -7248,7 +8018,8 @@
+ 						{
+ 							data.villagerGold[index] = Math.Max(0, data.villagerGold[index] - 1);
+ 						}
+-						data.villagerHunger[index] = Math.Max(0, data.villagerHunger[index] - 4);
++						int relief = (flag ? ScaleByLaw(data, 1, 4) : 4);
++						data.villagerHunger[index] = Math.Max(0, data.villagerHunger[index] - relief);
+ 					}
+ 					else if (flag4)
+ 					{
+@@ -7303,13 +8074,16 @@
+ 			}
+ 			if (tick % 240 == 0 && HasLaw(data, 3) && data.villagerGold[index] > 60)
+ 			{
+-				data.villagerGold[index] -= 12;
+-				data.granaryFood = Math.Min(data.granaryCapacity, data.granaryFood + 3);
+-				data.treasuryGold += 3;
++				int tax = ScaleByLaw(data, 3, 12);
++				int taxGrain = ScaleByLaw(data, 3, 3);
++				data.villagerGold[index] = Math.Max(0, data.villagerGold[index] - tax);
++				data.granaryFood = Math.Min(data.granaryCapacity, data.granaryFood + taxGrain);
++				data.treasuryGold += taxGrain;
+ 			}
+ 			if (tick % 240 == 0 && HasLaw(data, 11) && data.villagerAges[index] >= 14)
+ 			{
+-				data.villagerHunger[index] = Math.Min(99, data.villagerHunger[index] + 2);
++				int hardship = ScaleByLaw(data, 11, 2);
++				data.villagerHunger[index] = Math.Min(99, data.villagerHunger[index] + hardship);
+ 			}
+ 		}
+ 
+@@ -7369,15 +8143,15 @@
+ 			int num5 = population / 3;
+ 			if (HasLaw(data, 5))
+ 			{
+-				num4 += Math.Max(1, population / 4);
++				num4 += ScaleByLaw(data, 5, Math.Max(1, population / 4));
+ 			}
+ 			if (HasLaw(data, 11))
+ 			{
+-				num4 += Math.Max(1, population / 5);
++				num4 += ScaleByLaw(data, 11, Math.Max(1, population / 5));
+ 			}
+ 			if (HasLaw(data, 1))
+ 			{
+-				num5 += Math.Max(1, population / 8);
++				num5 += ScaleByLaw(data, 1, Math.Max(1, population / 8));
+ 			}
+ 			int num6 = Farmland.CountFarmland(data);
+ 			if (data.arableBaseline > 0 && num6 > 0)
+@@ -7444,11 +8218,11 @@
+ 					}
+ 					if (HasLaw(data, 9))
+ 					{
+-						num2 -= 4;
++						num2 -= ScaleByLaw(data, 9, 4);
+ 					}
+ 					if (HasLaw(data, 12))
+ 					{
+-						num2 -= 3;
++						num2 -= ScaleByLaw(data, 12, 3);
+ 					}
+ 					if (Traits.HasInnate(data, i, 64u))
+ 					{
+@@ -7510,7 +8284,7 @@
+ 			}
+ 			if (HasLaw(data, 12))
+ 			{
+-				num2 -= 5;
++				num2 -= ScaleByLaw(data, 12, 5);
+ 			}
+ 			if (num2 < 1)
+ 			{
+@@ -7803,11 +8577,26 @@
+ 
+ 		private static bool HasLaw(VillageSaveData data, int lawId)
+ 		{
+-			if (data.prestigeSuspended)
++			return LawEngine.IsLawActive(data, lawId);
++		}
++
++		private static int ScaleByLaw(VillageSaveData data, int lawId, int value)
++		{
++			if (value == 0)
+ 			{
+-				return false;
++				return 0;
++			}
++			int num = 100 + LawEngine.LawStrengthValue(data, lawId);
++			if (num <= 0)
++			{
++				return 0;
+ 			}
+-			return FindLawSlot(data, lawId) >= 0;
++			int num2 = value * num / 100;
++			if (value > 0 && num2 < 1)
++			{
++				num2 = 1;
++			}
++			return num2;
+ 		}
+ 
+ 		private static void EnsureLifecycleArrays(VillageSaveData data)
+@@ -8013,7 +8802,7 @@
+ 					data.villagerChildrenAlive[num3]--;
+ 				}
+ 			}
+-			if (lawIndex >= 0 || cause == "律法")
++			if (cause == "律法")
+ 			{
+ 				data.executions++;
+ 			}
+@@ -8178,18 +8967,7 @@
+ 
+ 		private static bool HasLaw(VillageSaveData data, int lawId)
+ 		{
+-			if (data.prestigeSuspended || data.lawIds == null)
+-			{
+-				return false;
+-			}
+-			for (int i = 0; i < data.lawIds.Length; i++)
+-			{
+-				if (data.lawIds[i] == lawId)
+-				{
+-					return true;
+-				}
+-			}
+-			return false;
++			return LawEngine.IsLawActive(data, lawId);
+ 		}
+ 	}
+ }
+@@ -9048,7 +9826,7 @@
+ 			int num = 0;
+ 			for (int i = 0; i < data.lawNames.Length; i++)
+ 			{
+-				if (!string.IsNullOrWhiteSpace(data.lawNames[i]))
++				if (!string.IsNullOrWhiteSpace(data.lawNames[i]) && (data.lawStrength == null || i >= data.lawStrength.Length || data.lawStrength[i] > -100))
+ 				{
+ 					num++;
+ 				}
+@@ -9544,22 +10322,7 @@
+ 
+ 		private static bool HasLaw(VillageSaveData data, int lawId)
+ 		{
+-			if (data.prestigeSuspended)
+-			{
+-				return false;
+-			}
+-			if (data.lawIds == null)
+-			{
+-				return false;
+-			}
+-			for (int i = 0; i < data.lawIds.Length; i++)
+-			{
+-				if (data.lawIds[i] == lawId)
+-				{
+-					return true;
+-				}
+-			}
+-			return false;
++			return LawEngine.IsLawActive(data, lawId);
+ 		}
+ 	}
+ 	[DisallowMultipleComponent]
+@@ -11954,20 +12717,20 @@
+ 				E(LawEffectKind.Steal, LawScope.Self, LawField.Gold, 12),
+ 				E(LawEffectKind.Add, LawScope.Self, LawField.Fear, 3)
+ 			}),
+-			Law(3, "税收", "金币 > 60", "交纳 12 金币", "税款进入执政税库，可用于购买稀有法律。", 1),
++			Law(3, "税收", "金币 > 60", "交纳 12 金币（税库 +3、粮仓 +3）", "税款进入执政税库，可用于购买稀有法律。", 1),
+ 			Law(4, "恐惧蔓延", "恐惧 > 45", "恐惧继续增加", "正反馈会从一个人扩散到整片村庄。", 3),
+-			Law(5, "耕作", "所有人", "公共粮仓产出提高", "提高承载力，但普惠法最容易疲劳。", 0),
++			Law(5, "耕作", "所有人", "公共粮仓产出提高", "提高承载力，但会长期占用一个法槽。", 0),
+ 			Law(6, "安抚", "恐惧 > 40", "减少恐惧", "目前最稳定的恐惧压制法律。", 3),
+-			Law(7, "私刑倾向", "恐惧 > 60", "打上罪人标签", "恐惧高的人会先指认邻居。", 2, new LawCond[1] { C(LawCondKind.SelfGt, LawField.Fear, 42) }, new LawEffect[2]
++			Law(7, "私刑倾向", "恐惧 > 42", "打上罪人标签", "恐惧高的人会先指认邻居。", 2, new LawCond[1] { C(LawCondKind.SelfGt, LawField.Fear, 42) }, new LawEffect[2]
+ 			{
+ 				E(LawEffectKind.Add, LawScope.Self, LawField.Fear, 2),
+ 				E(LawEffectKind.Add, LawScope.Neighbors, LawField.Fear, 2)
+ 			}),
+-			Law(8, "婚育补贴", "已婚且饥饿 < 55", "提高生育意愿", "稳定人口，但长期增加粮食压力。", 4),
++			Law(8, "婚育补贴", "全局生育检定", "提高生育意愿（粮仓 >180 时生育检定置 100）", "稳定人口，但长期增加粮食压力。", 4),
+ 			Law(9, "幼童口粮", "年龄 < 8", "优先获得存粮", "显著降低幼儿夭折概率。", 4),
+ 			Law(10, "宵禁", "所有人", "夜间恐惧下降、社交减少", "更安全，但出生率也会下降。", 3),
+ 			Law(11, "劳役", "成年人", "粮仓产出增加，饥饿上升", "用身体换粮，病弱者风险更高。", 1),
+-			Law(12, "医药", "病弱或年龄 < 5", "降低夭折和病死概率", "昂贵，但能托住人口底线。", 4),
++			Law(12, "医药", "幼儿、老人、疫病", "降低夭折和病死概率", "昂贵，但能托住人口底线。", 4),
+ 			Law(13, "公共卫生", "每 240 tick", "降低疾病与夭折", "清洁水源与集中处置尸体。", 4, new LawCond[1] { C(LawCondKind.Periodic, LawField.Hunger, 240) }, new LawEffect[2]
+ 			{
+ 				E(LawEffectKind.Add, LawScope.All, LawField.Hunger, -2),
+@@ -11986,24 +12749,28 @@
+ 				E(LawEffectKind.ModifyBirthCd, LawScope.Self, LawField.BirthCooldown, 20)
+ 			}),
+ 			Law(16, "连坐", "邻居本 tick 死亡", "自己恐惧增加", "一人犯罪，邻居共同受罚。", 2, new LawCond[1] { C(LawCondKind.NeighborDiedThisTick, LawField.Alive, 1) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.Self, LawField.Fear, 6) }),
+-			HiddenLaw(17, "流民法", "人口尚可接纳", "允许外来者加入", "死亡积累到一定规模后出现。", 1, 1, 5, "累计死亡 5 人后解锁", new LawCond[2]
++			HiddenLaw(17, "流民法", "人口 < 60，每 240 tick（移民：人口 < 25 且粮仓 > 20）", "全体饥饿 −4；移民批次 +2→+3", "死亡积累到一定规模后出现。", 1, 1, 5, "累计死亡 5 人后解锁", new LawCond[2]
+ 			{
+ 				C(LawCondKind.AliveLt, LawField.Hunger, 60),
+ 				C(LawCondKind.Periodic, LawField.Hunger, 240)
+ 			}, new LawEffect[1] { E(LawEffectKind.Add, LawScope.All, LawField.Hunger, -4) }),
+-			HiddenLaw(18, "起义豁免", "恐惧极高", "释放罪人并降低恐惧", "连续死亡后出现的临时妥协。", 3, 1, 8, "累计死亡 8 人后解锁", new LawCond[1] { C(LawCondKind.CountGt, LawField.Fear, 49, 3) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.All, LawField.Fear, -12) }, 240),
+-			HiddenLaw(19, "安葬礼法", "有幼儿夭折", "降低全村恐惧", "村庄开始认真面对死亡。", 4, 6, 3, "幼儿夭折 3 人后解锁", new LawCond[1] { C(LawCondKind.Periodic, LawField.Fear, 240) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.All, LawField.Fear, -3) }),
++			HiddenLaw(18, "起义豁免", "4 人恐惧 > 49", "释放罪人并降低恐惧", "连续死亡后出现的临时妥协。", 3, 1, 8, "累计死亡 8 人后解锁", new LawCond[1] { C(LawCondKind.CountGt, LawField.Fear, 49, 3) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.All, LawField.Fear, -12) }, 240),
++			HiddenLaw(19, "安葬礼法", "有幼儿夭折，每 240 tick", "降低全村恐惧", "村庄开始认真面对死亡。", 4, 6, 3, "幼儿夭折 3 人后解锁", new LawCond[2]
++			{
++				C(LawCondKind.TotalGt, LawField.InfantDeaths, 0),
++				C(LawCondKind.Periodic, LawField.Fear, 240)
++			}, new LawEffect[1] { E(LawEffectKind.Add, LawScope.All, LawField.Fear, -3) }),
+ 			HiddenLaw(20, "丰年祭", "公共粮仓充足", "提高生育和士气", "只有粮仓充盈时才会出现。", 0, 4, 400, "公共粮仓达到 400 后解锁", new LawCond[2]
+ 			{
+ 				C(LawCondKind.ResGt, LawField.Granary, 200),
+ 				C(LawCondKind.Periodic, LawField.Hunger, 240)
+ 			}, new LawEffect[1] { E(LawEffectKind.Add, LawScope.All, LawField.Hunger, -6) }),
+-			HiddenLaw(21, "长老议事", "人口达到 30", "降低法律疲劳", "人口形成规模后，长老会介入。", 1, 3, 30, "存活人口达到 30 后解锁", new LawCond[2]
++			HiddenLaw(21, "长老议事", "人口达到 30", "降低生育冷却", "人口形成规模后，长老会介入。", 1, 3, 30, "存活人口达到 30 后解锁", new LawCond[2]
+ 			{
+ 				C(LawCondKind.AliveGt, LawField.Age, 29),
+ 				C(LawCondKind.Periodic, LawField.BirthCooldown, 240)
+ 			}, new LawEffect[1] { E(LawEffectKind.ModifyBirthCd, LawScope.All, LawField.BirthCooldown, -20) }),
+-			HiddenLaw(22, "瘟疫隔离", "多人恐惧 > 80", "隔离高危村民", "恐惧扩散后出现的紧急法律。", 3, 7, 3, "3 名村民恐惧超过 80 后解锁", new LawCond[1] { C(LawCondKind.CountGt, LawField.Fear, 56, 2) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.All, LawField.Fear, -10) }, 240),
++			HiddenLaw(22, "瘟疫隔离", "3 人恐惧 > 56", "隔离高危村民", "恐惧扩散后出现的紧急法律。", 3, 7, 3, "3 名村民恐惧超过 80 后解锁", new LawCond[1] { C(LawCondKind.CountGt, LawField.Fear, 56, 2) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.All, LawField.Fear, -10) }, 240),
+ 			HiddenLaw(23, "互助会", "多人贫穷", "富人向穷人转移粮食", "贫困人口形成规模后出现。", 0, 8, 8, "8 名村民金币低于 10 后解锁", new LawCond[1] { C(LawCondKind.CountLt, LawField.Gold, 10, 7) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.All, LawField.Gold, 2) }),
+ 			RareLaw(24, "王权税契", "税库金币 >= 60", "威信恢复加快", "用税库金币购买的王权法律。", 1, 60, "税库达到 60 金币后可购买", new LawCond[1] { C(LawCondKind.Periodic, LawField.Prestige, 120) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.Prestige, LawField.Prestige, 2) }),
+ 			RareLaw(25, "雇佣护卫", "税库金币 >= 40", "降低私刑与抢劫", "用税库金币维持一支护卫队。", 2, 40, "税库达到 40 金币后可购买", new LawCond[1] { C(LawCondKind.Periodic, LawField.Fear, 120) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.All, LawField.Fear, -4) }),
+@@ -12068,8 +12835,8 @@
+ 				E(LawEffectKind.Add, LawScope.Neighbors, LawField.Fear, 4)
+ 			}),
+ 			Law(33, "征粮", "存粮 > 15", "余粮上交公共粮仓", "超出的部分归全村。", 0, new LawCond[1] { C(LawCondKind.SelfGt, LawField.Food, 15) }, new LawEffect[1] { E(LawEffectKind.Drain, LawScope.Granary, LawField.Food, 5) }),
+-			Law(34, "诛心", "3 人恐惧 > 65", "让恐惧者更恐惧", "恐惧本身成为刑罚。", 3, new LawCond[1] { C(LawCondKind.CountGt, LawField.Fear, 45, 2) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.All, LawField.Fear, 3, 0, 100, 1, 0, 25) }, 30),
+-			Law(35, "祭祀", "粮仓 > 5，3 人恐惧 > 50", "耗粮安抚人心", "用粮食换取一夜安宁。", 3, new LawCond[2]
++			Law(34, "诛心", "3 人恐惧 > 45", "让恐惧者更恐惧", "恐惧本身成为刑罚。", 3, new LawCond[1] { C(LawCondKind.CountGt, LawField.Fear, 45, 2) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.All, LawField.Fear, 3, 0, 100, 1, 0, 25) }, 30),
++			Law(35, "祭祀", "粮仓 > 5，3 人恐惧 > 35", "耗粮安抚人心", "用粮食换取一夜安宁。", 3, new LawCond[2]
+ 			{
+ 				C(LawCondKind.ResGt, LawField.Granary, 5),
+ 				C(LawCondKind.CountGt, LawField.Fear, 35, 2)
+@@ -12078,12 +12845,12 @@
+ 				E(LawEffectKind.Add, LawScope.Granary, LawField.Granary, -5),
+ 				E(LawEffectKind.Add, LawScope.All, LawField.Fear, -8, 0, 100, 1, 0, 50)
+ 			}, 60),
+-			Law(36, "逐客", "有人恐惧 > 85", "处决最恐惧者", "把最不安的人赶出村子。", 3, new LawCond[1] { C(LawCondKind.CountGt, LawField.Fear, 59, 1) }, new LawEffect[2]
++			Law(36, "逐客", "2 人恐惧 > 59", "处决最恐惧者", "把最不安的人赶出村子。", 3, new LawCond[1] { C(LawCondKind.CountGt, LawField.Fear, 59, 1) }, new LawEffect[2]
+ 			{
+ 				E(LawEffectKind.KillMaxOf, LawScope.Self, LawField.Fear, 0),
+ 				E(LawEffectKind.Add, LawScope.All, LawField.Fear, -6)
+ 			}, 120),
+-			Law(37, "立威", "威信 < 12，3 人恐惧 > 60", "以饥荒换取威信", "让所有人记住谁在执政。", 3, new LawCond[2]
++			Law(37, "立威", "威信 < 12，3 人恐惧 > 42", "以饥荒换取威信", "让所有人记住谁在执政。", 3, new LawCond[2]
+ 			{
+ 				C(LawCondKind.SelfLt, LawField.Prestige, 12),
+ 				C(LawCondKind.CountGt, LawField.Fear, 42, 2)
+@@ -12132,14 +12899,14 @@
+ 				C(LawCondKind.SelfEq, LawField.Gender, 0),
+ 				C(LawCondKind.SelfLt, LawField.Age, 22)
+ 			}, new LawEffect[1] { E(LawEffectKind.ModifyBirthCd, LawScope.Self, LawField.BirthCooldown, 30) }),
+-			Law(44, "峻法", "威信 < 40，已装劳役", "劳役效果增强", "用更重的劳役维持秩序。", 2, new LawCond[2]
++			Law(44, "峻法", "威信 < 40，已装劳役", "劳役强度 +2，威信 +1", "用更重的劳役维持秩序。", 2, new LawCond[2]
+ 			{
+ 				C(LawCondKind.SelfLt, LawField.Prestige, 40),
+ 				C(LawCondKind.HasLaw, LawField.Prestige, 11)
+ 			}, new LawEffect[2]
+ 			{
+ 				E(LawEffectKind.ModifyLawStrength, LawScope.Self, LawField.BirthCooldown, 2),
+-				E(LawEffectKind.Add, LawScope.Self, LawField.Prestige, 1)
++				E(LawEffectKind.Add, LawScope.Prestige, LawField.Prestige, 1)
+ 			}, 240),
+ 			Law(45, "苛敛", "税库 < 20，已装税收", "税收增强、耕作减弱", "加税的钱从耕作里出。", 1, new LawCond[2]
+ 			{
+@@ -12155,23 +12922,24 @@
+ 				E(LawEffectKind.ModifyLawStrength, LawScope.Self, LawField.Food, -2),
+ 				E(LawEffectKind.ModifyLawStrength, LawScope.Self, LawField.Fear, 2)
+ 			}, 240),
+-			Law(47, "整肃", "6 人恐惧 > 50", "医药减弱、劳役增强", "乱世先整人，再谈治病。", 2, new LawCond[1] { C(LawCondKind.CountGt, LawField.Fear, 35, 5) }, new LawEffect[2]
++			Law(47, "整肃", "6 人恐惧 > 35", "医药减弱、劳役增强", "乱世先整人，再谈治病。", 2, new LawCond[1] { C(LawCondKind.CountGt, LawField.Fear, 35, 5) }, new LawEffect[2]
+ 			{
+ 				E(LawEffectKind.ModifyLawStrength, LawScope.Self, LawField.TotalDeaths, -3),
+ 				E(LawEffectKind.ModifyLawStrength, LawScope.Self, LawField.BirthCooldown, 2)
+ 			}, 240),
+-			Law(48, "威权", "威信 > 80", "以威信换财政", "威权本身就是一种税收。", 2, new LawCond[1] { C(LawCondKind.SelfGt, LawField.Prestige, 80) }, new LawEffect[3]
++			Law(48, "威权", "威信 > 80", "其他法强度+1，抽威信/税库/粮仓", "威权本身就是一种税收。", 2, new LawCond[1] { C(LawCondKind.SelfGt, LawField.Prestige, 80) }, new LawEffect[4]
+ 			{
++				E(LawEffectKind.BoostOtherLaws, LawScope.Self, LawField.BirthCooldown, 1),
+ 				E(LawEffectKind.Add, LawScope.Prestige, LawField.Prestige, -5),
+ 				E(LawEffectKind.Add, LawScope.Treasury, LawField.Treasury, -8),
+ 				E(LawEffectKind.Add, LawScope.Granary, LawField.Granary, -2)
+ 			}, 60),
+-			Law(49, "赦令", "威信 > 90", "废除一条法", "大赦天下，威信为代价。", 1, new LawCond[1] { C(LawCondKind.SelfGt, LawField.Prestige, 90) }, new LawEffect[2]
++			Law(49, "赦令", "威信 > 90", "废除强度最高的一条法", "大赦天下，威信为代价。", 1, new LawCond[1] { C(LawCondKind.SelfGt, LawField.Prestige, 90) }, new LawEffect[2]
+ 			{
+-				E(LawEffectKind.DisableLaw, LawScope.Self, LawField.BirthCooldown, 11),
++				E(LawEffectKind.DisableStrongestLaw, LawScope.Self, LawField.BirthCooldown, 0),
+ 				E(LawEffectKind.Add, LawScope.Prestige, LawField.Prestige, -10)
+ 			}, 240),
+-			Law(50, "示众", "3 人恐惧 > 80", "重新分配恐惧", "恐惧高的人被公开处置。", 3, new LawCond[1] { C(LawCondKind.CountGt, LawField.Fear, 56, 2) }, new LawEffect[2]
++			Law(50, "示众", "3 人恐惧 > 56", "重新分配恐惧", "恐惧高的人被公开处置。", 3, new LawCond[1] { C(LawCondKind.CountGt, LawField.Fear, 56, 2) }, new LawEffect[2]
+ 			{
+ 				E(LawEffectKind.Add, LawScope.All, LawField.Fear, -20, 0, 100, 1, 0, 80),
+ 				E(LawEffectKind.Add, LawScope.All, LawField.Fear, 2, 0, 100, 1, 1, 80)
+@@ -12249,13 +13017,13 @@
+ 				E(LawEffectKind.Add, LawScope.Granary, LawField.Granary, -8),
+ 				E(LawEffectKind.Add, LawScope.All, LawField.Fear, -3)
+ 			}),
+-			HiddenLaw(62, "阴气", "累计死亡 >= 20", "阴气积累", "死的人多了，村子自己会变冷。", 3, 1, 20, "累计死亡 20 人后解锁", new LawCond[1] { C(LawCondKind.TotalGt, LawField.TotalDeaths, 20) }, new LawEffect[2]
++			HiddenLaw(62, "阴气", "累计死亡 > 20", "阴气积累", "死的人多了，村子自己会变冷。", 3, 1, 20, "累计死亡 20 人后解锁", new LawCond[1] { C(LawCondKind.TotalGt, LawField.TotalDeaths, 20) }, new LawEffect[2]
+ 			{
+ 				E(LawEffectKind.Add, LawScope.All, LawField.Fear, 1),
+ 				E(LawEffectKind.Add, LawScope.Granary, LawField.Granary, -1)
+ 			}, 60),
+-			HiddenLaw(63, "香火", "累计死亡 >= 1", "以粮祭奠", "每一次死亡都要消耗一点粮食。", 4, 1, 1, "累计死亡 1 人后解锁", new LawCond[1] { C(LawCondKind.TotalGt, LawField.TotalDeaths, 1) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.Granary, LawField.Granary, -1) }, 60),
+-			HiddenLaw(64, "刑戮", "4 人恐惧 > 60", "处决最恐惧者", "恐惧到极点时，杀人是唯一的手段。", 2, 7, 3, "3 名村民恐惧超过 80 后解锁", new LawCond[1] { C(LawCondKind.CountGt, LawField.Fear, 42, 3) }, new LawEffect[2]
++			HiddenLaw(63, "香火", "累计死亡 > 1", "以粮祭奠", "每一次死亡都要消耗一点粮食。", 4, 1, 1, "累计死亡 1 人后解锁", new LawCond[1] { C(LawCondKind.TotalGt, LawField.TotalDeaths, 1) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.Granary, LawField.Granary, -1) }, 60),
++			HiddenLaw(64, "刑戮", "4 人恐惧 > 42", "处决最恐惧者", "恐惧到极点时，杀人是唯一的手段。", 2, 7, 3, "3 名村民恐惧超过 80 后解锁", new LawCond[1] { C(LawCondKind.CountGt, LawField.Fear, 42, 3) }, new LawEffect[2]
+ 			{
+ 				E(LawEffectKind.KillMaxOf, LawScope.Self, LawField.Fear, 0),
+ 				E(LawEffectKind.Add, LawScope.All, LawField.Fear, -8)
+@@ -12282,7 +13050,7 @@
+ 				E(LawEffectKind.Drain, LawScope.Neighbors, LawField.Food, 3),
+ 				E(LawEffectKind.Add, LawScope.Self, LawField.Fear, -2)
+ 			}),
+-			Law(70, "共井", "相邻者存活", "共用一口井", "邻里还在，日子就还能过。", 0, new LawCond[1] { C(LawCondKind.NeighborGt, LawField.Alive, 0) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.Self, LawField.Hunger, -1) }),
++			Law(70, "共井", "相邻者存活", "每 8 天自己饥饿 −1", "邻里还在，日子就还能过。", 0, new LawCond[1] { C(LawCondKind.NeighborGt, LawField.Alive, 0) }, new LawEffect[1] { E(LawEffectKind.Add, LawScope.Self, LawField.Hunger, -1) }, 64),
+ 			Law(71, "开垦", "粮仓 < 150", "花 15 粮，把一格草地或荒地变成耕地", "开了荒才有地种。但粮仓里的粮食是今年要吃的。", 0)
+ 		};
+ 
+@@ -12689,7 +13457,9 @@
+ 		ModifyBirthCd,
+ 		SetField,
+ 		BroadcastFrom,
+-		FillTo
++		FillTo,
++		BoostOtherLaws,
++		DisableStrongestLaw
+ 	}
+ 	[Serializable]
+ 	public struct LawCond

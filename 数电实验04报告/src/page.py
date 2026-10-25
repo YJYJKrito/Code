@@ -1,0 +1,138 @@
+# -*- coding: utf-8 -*-
+"""生成 index.html —— 供下载实验报告 PDF 的网页。"""
+import html
+import os
+
+STUDENT = {"课序号": "02", "班级": "软智2504", "学号": "20252082264", "姓名": "郝永健"}
+
+TODO_ITEMS = [
+    ("先把 Proteus 工程做完", "在 Proteus 8.8 里按附录4.2（演示版）补齐连线并运行仿真。"
+     "本次设计已把要改的地方写成清单，见报告正文第三节。"),
+    ("打印附录4.2（最终版）.pdf", "运行时打印原理图，存成 «PDF 附录4.2（最终版）.pdf»。"),
+    ("扫描附录4.1（课堂实践文档最终版）.pdf", "把课上经老师签字的附录4.1纸质稿扫描成 PDF。"),
+    ("按顺序合并三个 PDF", "顺序：① PDF实验04报告正文.pdf ② 附录4.1 ③ 附录4.2。"
+     "可用 www.ilovepdf.com 的 Merge 功能。"),
+    ("命名为 EXP04_02_RZ2504_20252082264.pdf", "合并后的文件名。"),
+    ("与工程文件一起打包", "把 .pdsprj 和 .pdf 压成 EXP04_02_RZ2504_20252082264.zip / .rar 上传超星。"),
+]
+
+
+def _li(title: str, desc: str) -> str:
+    return f'<li><b>{html.escape(title)}</b><span>{html.escape(desc)}</span></li>'
+
+
+def build(pdf_name: str, pdf_size: int, pages: int) -> str:
+    info = "".join(
+        f'<div class="stat"><dt>{k}</dt><dd>{v}</dd></div>' for k, v in STUDENT.items()
+    )
+    size_mb = pdf_size / 1024 / 1024
+    todos = "\n".join(_li(t, d) for t, d in TODO_ITEMS)
+
+    return f"""<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>实验04 实验报告 · 下载</title>
+<style>
+  :root {{
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --ink: #16181d;
+    --mid: #5b6270;
+    --line: #e2e5ea;
+    --accent: #1f4e79;
+    --accent-soft: #eaf1f8;
+  }}
+  * {{ box-sizing: border-box; }}
+  body {{
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif;
+    line-height: 1.6;
+  }}
+  .wrap {{ max-width: 880px; margin: 0 auto; padding: 44px 20px 80px; }}
+
+  header h1 {{ font-size: 25px; margin: 0 0 6px; letter-spacing: .3px; }}
+  header h1 small {{ display:block; font-size: 13px; font-weight: 400;
+                     color: var(--mid); letter-spacing: 0; margin-bottom: 8px; }}
+  header p {{ margin: 0; color: var(--mid); font-size: 14px; }}
+
+  .stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px; margin: 26px 0 0; }}
+  .stat {{ background: var(--card); border: 1px solid var(--line);
+           border-radius: 10px; padding: 12px 14px; }}
+  .stat dt {{ font-size: 12px; color: var(--mid); }}
+  .stat dd {{ margin: 2px 0 0; font-size: 16px; font-weight: 600; letter-spacing: .5px; }}
+
+  .card {{ background: var(--card); border: 1px solid var(--line);
+           border-radius: 14px; padding: 22px 24px; margin-top: 22px; }}
+
+  .dl {{ display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }}
+  .dl .icon {{ width: 46px; height: 46px; flex: 0 0 46px; border-radius: 10px;
+               background: var(--accent-soft); display: grid; place-items: center;
+               color: var(--accent); font-size: 15px; font-weight: 700; }}
+  .dl .meta {{ flex: 1 1 240px; min-width: 200px; }}
+  .dl .meta b {{ display: block; font-size: 15px; word-break: break-all; }}
+  .dl .meta span {{ font-size: 13px; color: var(--mid); }}
+  a.btn {{ display: inline-block; background: var(--accent); color: #fff;
+           text-decoration: none; padding: 11px 26px; border-radius: 9px;
+           font-size: 15px; font-weight: 600; white-space: nowrap; }}
+  a.btn:hover {{ background: #17405f; }}
+  a.ghost {{ display: inline-block; margin-left: 14px; color: var(--accent);
+             font-size: 14px; text-decoration: none; border-bottom: 1px solid var(--accent); }}
+
+  h2 {{ font-size: 15px; margin: 0 0 14px; }}
+  ol.todo {{ margin: 0; padding-left: 0; list-style: none; counter-reset: t; }}
+  ol.todo li {{ counter-increment: t; position: relative; padding: 9px 0 9px 40px;
+                border-top: 1px solid var(--line); font-size: 14px; }}
+  ol.todo li:first-child {{ border-top: 0; }}
+  ol.todo li::before {{
+    content: counter(t); position: absolute; left: 0; top: 11px;
+    width: 24px; height: 24px; border-radius: 50%; background: var(--accent-soft);
+    color: var(--accent); font-size: 12px; font-weight: 700;
+    display: grid; place-items: center;
+  }}
+  ol.todo li b {{ display: block; font-weight: 600; }}
+  ol.todo li span {{ color: var(--mid); font-size: 13px; }}
+
+  .preview {{ width: 100%; height: 620px; border: 1px solid var(--line);
+              border-radius: 10px; background: #fff; margin-top: 4px; }}
+  .hint {{ font-size: 13px; color: var(--mid); margin: 10px 0 0; }}
+  footer {{ margin-top: 30px; font-size: 12.5px; color: var(--mid); text-align: center; }}
+  @media print {{ body {{ background:#fff }} .card,.stat {{ border-color:#ccc }} }}
+</style></head>
+<body><div class="wrap">
+
+<header>
+  <h1><small>大连理工开发区校区软件学院 · 《数字逻辑系统实验》2026 年度秋</small>
+      实验 04　组合逻辑综合设计</h1>
+  <p>基于 4-16 译码器的 2 位二进制乘法器电路设计 —— 实验报告正文</p>
+</header>
+
+<div class="stats">{info}</div>
+
+<div class="card">
+  <div class="dl">
+    <div class="icon">PDF</div>
+    <div class="meta">
+      <b>{pdf_name}</b>
+      <span>{size_mb:.2f} MB · 共 {pages} 页 · A4</span>
+    </div>
+    <a class="btn" href="{pdf_name}" download>下载报告</a>
+    <a class="ghost" href="{pdf_name}" target="_blank">在线预览</a>
+  </div>
+</div>
+
+<div class="card">
+  <h2>交作业前还要你自己做的几步</h2>
+  <ol class="todo">{todos}</ol>
+</div>
+
+<div class="card">
+  <h2>报告预览</h2>
+  <iframe class="preview" src="{pdf_name}#view=FitH" title="实验报告预览"></iframe>
+  <p class="hint">若预览区空白，说明这个浏览器没有内置 PDF 阅读器，直接点上方的「下载报告」或「在线预览」即可。</p>
+</div>
+
+<footer>《数字逻辑系统实验》实验 04 · 报告正文</footer>
+
+</div></body></html>
+"""

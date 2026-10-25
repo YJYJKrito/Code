@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学习习近平总书记“七一”重要讲话精神</title>
+<style>
+  :root{
+    --red:#C8161D;
+    --red-deep:#8E0B12;
+    --red-dark:#4E0408;
+    --gold:#D4AF37;
+    --gold-soft:#EBCE86;
+    --ink:#1F1B18;
+    --muted:#6B6259;
+    --paper:#FDFBF7;
+    --sans:"PingFang SC","Microsoft YaHei","Source Han Sans SC","Noto Sans CJK SC",-apple-system,"Segoe UI",sans-serif;
+    --serif:"Source Han Serif SC","Songti SC","SimSun","Noto Serif CJK SC",serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{
+    height:100%;overflow:hidden;background:#140406;
+    font-family:var(--sans);color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  #stage{
+    position:absolute;left:50%;top:50%;
+    width:1280px;height:720px;
+    transform-origin:center center;
+    box-shadow:0 30px 80px rgba(0,0,0,.55);
+  }
+  .slide{
+    position:absolute;inset:0;
+    padding:60px 76px;
+    background:var(--paper);
+    display:flex;flex-direction:column;
+    opacity:0;visibility:hidden;
+    transition:opacity .38s ease, transform .38s ease;
+    transform:translateX(26px);
+    overflow:hidden;
+  }
+  .slide.is-active{opacity:1;visibility:visible;transform:none;z-index:2}
+
+  /* ---------- 通用版式 ---------- */
+  .eyebrow{
+    font-size:15px;letter-spacing:.28em;color:var(--red);
+    font-weight:600;margin-bottom:14px;
+  }
+  .eyebrow::before{
+    content:"";display:inline-block;width:26px;height:2px;
+    background:var(--red);vertical-align:middle;
+    margin-right:12px;transform:translateY(-3px);
+  }
+  h2.title{
+    font-family:var(--serif);font-size:46px;line-height:1.2;
+    font-weight:700;color:var(--ink);letter-spacing:.01em;
+  }
+  h2.title em{font-style:normal;color:var(--red)}
+  .rule{
+    width:72px;height:4px;border-radius:2px;
+    background:linear-gradient(90deg,var(--red),var(--gold));
+    margin:18px 0 30px;flex:none;
+  }
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0}
+  .pagenum{
+    position:absolute;right:76px;bottom:26px;
+    font-size:13px;color:#B9AFA3;letter-spacing:.12em;
+  }
+  .tag{
+    display:inline-block;padding:5px 14px;border-radius:999px;
+    background:rgba(200,22,29,.08);color:var(--red);
+    font-size:14px;font-weight:600;letter-spacing:.06em;
+  }
+  .quote{
+    position:relative;padding:26px 32px 26px 40px;
+    background:#fff;border-radius:4px;
+    border-left:5px solid var(--red);
+    box-shadow:0 6px 22px rgba(31,27,24,.07);
+    font-family:var(--serif);font-size:23px;line-height:1.75;
+    color:#2A2320;
+  }
+  .quote .mark{
+    position:absolute;left:12px;top:-6px;
+    font-family:Georgia,serif;font-size:56px;color:rgba(200,22,29,.16);
+    line-height:1;
+  }
+  .quote .src{
+    display:block;margin-top:14px;font-family:var(--sans);
+    font-size:14px;color:var(--muted);letter-spacing:.04em;
+  }
+
+  /* ---------- 封面 ---------- */
+  .cover{
+    background:
+      radial-gradient(1100px 620px at 82% -10%, rgba(212,175,55,.20), transparent 62%),
+      radial-gradient(760px 520px at 6% 108%, rgba(212,175,55,.13), transparent 60%),
+      linear-gradient(140deg,#8E0B12 0%,#67060C 46%,#3B0307 100%);
+    color:#fff;justify-content:center;padding:0 96px;
+  }
+  .cover::after{
+    content:"";position:absolute;right:-120px;top:-120px;
+    width:520px;height:520px;border-radius:50%;
+    border:1px solid rgba(235,206,134,.22);
+    box-shadow:0 0 0 60px rgba(235,206,134,.05), 0 0 0 130px rgba(235,206,134,.03);
+  }
+  .cover .eyebrow{color:var(--gold-soft)}
+  .cover .eyebrow::before{background:var(--gold-soft)}
+  .cover h1{
+    font-family:var(--serif);font-size:76px;line-height:1.18;
+    font-weight:700;letter-spacing:.02em;text-shadow:0 4px 24px rgba(0,0,0,.3);
+  }
+  .cover h1 span{color:var(--gold-soft)}
+  .cover .sub{
+    margin-top:26px;font-size:20px;line-height:1.7;
+    color:rgba(255,255,255,.82);max-width:820px;
+  }
+  .cover .hairline{
+    width:120px;height:3px;background:var(--gold);
+    margin:34px 0 30px;border-radius:2px;
+  }
+  .cover .chips{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+  .cover .chips span{
+    padding:8px 18px;border:1px solid rgba(235,206,134,.45);
+    border-radius:999px;font-size:15px;color:var(--gold-soft);
+    letter-spacing:.06em;
+  }
+
+  /* ---------- 目录 ---------- */
+  .toc{display:grid;grid-template-columns:1fr 1fr;gap:18px 34px;align-content:center}
+  .toc-item{
+    display:flex;gap:20px;align-items:flex-start;
+    padding:16px 20px;border-radius:6px;
+    background:#fff;border:1px solid #EFE7DA;
+  }
+  .toc-item .no{
+    font-family:Georgia,serif;font-size:30px;font-weight:700;
+    color:var(--red);opacity:.85;line-height:1;min-width:46px;
+  }
+  .toc-item b{display:block;font-size:21px;font-weight:700;margin-bottom:6px;font-family:var(--serif)}
+  .toc-item small{font-size:14.5px;color:var(--muted);line-height:1.6}
+
+  /* ---------- 大字样张 ---------- */
+  .display{
+    font-family:var(--serif);font-weight:700;color:var(--red);
+    font-size:62px;line-height:1.2;letter-spacing:.04em;
+  }
+  .kv{display:flex;gap:16px;flex-wrap:wrap;margin-top:30px}
+  .kv span{
+    padding:10px 20px;border-radius:6px;background:#fff;
+    border:1px solid #EFE7DA;font-size:17px;font-weight:600;color:#3A322C;
+    box-shadow:0 4px 14px rgba(31,27,24,.05);
+  }
+
+  /* ---------- 四个成就 总览 ---------- */
+  .cards4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;align-content:center}
+  .card{
+    background:#fff;border:1px solid #EFE7DA;border-radius:8px;
+    padding:26px 22px;display:flex;flex-direction:column;
+    box-shadow:0 8px 24px rgba(31,27,24,.06);
+    border-top:4px solid var(--red);
+  }
+  .card .no{font-family:Georgia,serif;font-size:34px;font-weight:700;color:var(--red);line-height:1}
+  .card b{display:block;font-size:19px;margin:14px 0 10px;line-height:1.45;font-family:var(--serif)}
+  .card small{font-size:14px;color:var(--muted);line-height:1.7}
+  .card .badge{
+    margin-top:auto;padding-top:16px;font-size:13px;font-weight:700;
+    color:var(--red);letter-spacing:.08em;
+  }
+
+  /* ---------- 单个成就页 ---------- */
+  .ach{display:flex;gap:44px;align-items:flex-start}
+  .ach .num{
+    font-family:Georgia,serif;font-size:118px;font-weight:700;line-height:.82;
+    color:transparent;-webkit-text-stroke:2px rgba(200,22,29,.32);
+    flex:none;
+  }
+  .ach .info{flex:1}
+  .ach ul{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:26px}
+  .ach li{position:relative;padding-left:24px;font-size:19px;line-height:1.7;color:#332C27}
+  .ach li::before{
+    content:"";position:absolute;left:0;top:13px;
+    width:8px;height:8px;border-radius:2px;background:var(--gold);
+    transform:rotate(45deg);
+  }
+  .ach .claim{
+    padding:18px 26px;border-radius:4px;
+    background:linear-gradient(90deg,rgba(200,22,29,.07),rgba(200,22,29,.02));
+    border-left:4px solid var(--red);
+    font-family:var(--serif);font-size:20px;line-height:1.7;color:#2A2320;
+  }
+  .claim-label{font-size:13px;font-weight:700;color:var(--red);letter-spacing:.16em;display:block;margin-bottom:10px;font-family:var(--sans)}
+
+  /* ---------- 建党精神 ---------- */
+  .spirit{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;align-content:center}
+  .spirit .item{
+    background:#fff;border:1px solid #EFE7DA;border-radius:8px;
+    padding:26px 30px;font-family:var(--serif);
+    font-size:30px;font-weight:700;letter-spacing:.04em;color:var(--red-deep);
+    display:flex;align-items:center;gap:18px;
+    box-shadow:0 8px 24px rgba(31,27,24,.06);
+  }
+  .spirit .item i{
+    font-style:normal;font-family:Georgia,serif;font-size:20px;
+    color:#fff;background:var(--red);width:38px;height:38px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;flex:none;
+  }
+  .spirit-note{
+    margin-top:26px;text-align:center;font-size:17px;color:var(--muted);
+  }
+  .spirit-note b{color:var(--red);font-family:var(--serif);font-size:20px}
+
+  /* ---------- 九个必须 ---------- */
+  .nine{display:flex;flex-direction:column;gap:13px;justify-content:center}
+  .nine .row{
+    display:flex;gap:20px;align-items:center;
+    background:#fff;border:1px solid #EFE7DA;border-left:4px solid var(--red);
+    border-radius:6px;padding:14px 24px;
+  }
+  .nine .idx{
+    font-family:Georgia,serif;font-size:24px;font-weight:700;color:var(--red);
+    min-width:38px;line-height:1;
+  }
+  .nine .txt b{font-size:21px;font-weight:700;font-family:var(--serif);color:var(--ink)}
+  .nine .txt span{display:block;font-size:14.5px;color:var(--muted);margin-top:5px;line-height:1.55}
+  .nine.wide .row{padding:22px 26px}
+  .nine.wide .txt b{font-size:25px}
+
+  /* ---------- 两栏对比 ---------- */
+  .cols2{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-content:center}
+  .panel{
+    background:#fff;border:1px solid #EFE7DA;border-radius:10px;
+    padding:32px 32px 30px;height:100%;
+    box-shadow:0 8px 26px rgba(31,27,24,.06);
+    display:flex;flex-direction:column;
+  }
+  .panel h3{
+    font-family:var(--serif);font-size:27px;color:var(--red);
+    padding-bottom:16px;margin-bottom:22px;border-bottom:1px dashed #E7DCCA;
+  }
+  .panel p{font-size:18px;line-height:1.9;color:#332C27}
+  .panel p+p{margin-top:18px}
+  .panel strong{color:var(--red-deep)}
+
+  /* ---------- 青年 ---------- */
+  .youth{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:34px}
+  .youth .big3{display:flex;gap:26px}
+  .youth .big3 div{
+    width:210px;padding:34px 0;border-radius:10px;
+    background:#fff;border:1px solid #EFE7DA;
+    box-shadow:0 8px 26px rgba(31,27,24,.06);
+  }
+  .youth .big3 b{
+    display:block;font-family:var(--serif);font-size:52px;color:var(--red);
+    line-height:1;letter-spacing:.08em;
+  }
+  .youth .big3 small{display:block;margin-top:12px;font-size:14px;color:var(--muted);letter-spacing:.1em}
+  .youth .line{font-size:22px;line-height:1.8;color:#332C27;font-family:var(--serif);max-width:900px}
+
+  /* ---------- 号召 ---------- */
+  .call{display:flex;flex-direction:column;justify-content:center;gap:26px}
+  .call .box{
+    background:#fff;border:1px solid #EFE7DA;border-radius:10px;
+    padding:34px 40px;box-shadow:0 8px 26px rgba(31,27,24,.06);
+  }
+  .call .box p{
+    font-family:var(--serif);font-size:24px;line-height:1.95;color:#2A2320;
+  }
+  .call .box p b{color:var(--red)}
+
+  /* ---------- 结语 ---------- */
+  .final{
+    background:
+      radial-gradient(900px 520px at 88% 4%, rgba(212,175,55,.18), transparent 60%),
+      linear-gradient(140deg,#8E0B12 0%,#66060C 48%,#3B0307 100%);
+    color:#fff;justify-content:center;
+  }
+  .final .eyebrow{color:var(--gold-soft)}
+  .final .eyebrow::before{background:var(--gold-soft)}
+  .final .chain{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:8px 0 34px;
+  }
+  .final .chain div{
+    padding:22px 20px;border-radius:8px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(235,206,134,.3);
+  }
+  .final .chain b{
+    display:block;font-family:var(--serif);font-size:23px;color:var(--gold-soft);
+    margin-bottom:10px;
+  }
+  .final .chain small{font-size:14.5px;line-height:1.65;color:rgba(255,255,255,.78)}
+  .final .end{
+    font-family:var(--serif);font-size:27px;line-height:1.85;
+    color:#fff;max-width:1000px;
+  }
+  .final .end em{font-style:normal;color:var(--gold-soft)}
+
+  /* ---------- 控件 ---------- */
+  .ui{position:fixed;z-index:50}
+  #progress{
+    left:0;bottom:0;height:3px;width:0;
+    background:linear-gradient(90deg,var(--red),var(--gold));
+    transition:width .35s ease;
+  }
+  #counter{
+    right:22px;bottom:16px;color:rgba(255,255,255,.6);
+    font-size:13px;letter-spacing:.16em;font-family:Georgia,serif;
+    user-select:none;
+  }
+  #nav{left:22px;bottom:12px;display:flex;gap:8px}
+  #nav button{
+    width:38px;height:38px;border-radius:50%;cursor:pointer;
+    background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.22);
+    color:rgba(255,255,255,.8);font-size:16px;line-height:1;
+    transition:background .2s,border-color .2s;
+  }
+  #nav button:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.45)}
+  #hint{
+    left:50%;transform:translateX(-50%);bottom:18px;
+    color:rgba(255,255,255,.42);font-size:13px;letter-spacing:.1em;
+    transition:opacity .6s ease;user-select:none;
+  }
+
+  /* ---------- 打印 / 导出 PDF ---------- */
+  @page{size:33.87cm 19.05cm;margin:0}
+  @media print{
+    html,body{overflow:visible;height:auto;background:#fff}
+    #stage{position:static;transform:none!important;width:1280px;height:auto;box-shadow:none}
+    .slide{
+      position:relative;opacity:1!important;visibility:visible!important;
+      transform:none!important;height:720px;
+      break-after:page;page-break-after:always;
+    }
+    .slide:last-child{break-after:auto;page-break-after:auto}
+    .ui{display:none!important}
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+  <!-- 1 封面 -->
+  <section class="slide cover is-active">
+    <div class="eyebrow">党史学习教育 · 专题学习</div>
+    <h1>学习习近平总书记<br><span>“七一”</span>重要讲话精神</h1>
+    <div class="hairline"></div>
+    <p class="sub">——在庆祝中国共产党成立100周年大会上的重要讲话<br>
+      一篇马克思主义纲领性文献，新时代中国共产党人不忘初心、牢记使命的政治宣言</p>
+    <div class="chips">
+      <span>一个主题</span>
+      <span>四个伟大成就</span>
+      <span>伟大建党精神</span>
+      <span>九个必须</span>
+    </div>
+  </section>
+
+  <!-- 2 目录 -->
+  <section class="slide">
+    <div class="eyebrow">内容提要</div>
+    <h2 class="title">讲话核心精神<em>系统总结</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="toc">
+        <div class="toc-item"><div class="no">01</div><div><b>一个庄严宣告</b><small>实现第一个百年奋斗目标</small></div></div>
+        <div class="toc-item"><div class="no">02</div><div><b>一个主题</b><small>实现中华民族伟大复兴</small></div></div>
+        <div class="toc-item"><div class="no">03</div><div><b>四个伟大成就</b><small>与四个庄严宣告</small></div></div>
+        <div class="toc-item"><div class="no">04</div><div><b>伟大建党精神</b><small>中国共产党的精神之源</small></div></div>
+        <div class="toc-item"><div class="no">05</div><div><b>九个必须</b><small>以史为鉴、开创未来</small></div></div>
+        <div class="toc-item"><div class="no">06</div><div><b>三个不变 · 三个绝不</b><small>青年期望 · 一个号召</small></div></div>
+      </div>
+    </div>
+    <div class="pagenum">02</div>
+  </section>
+
+  <!-- 3 一个庄严宣告 -->
+  <section class="slide">
+    <div class="eyebrow">第一部分</div>
+    <h2 class="title">一个<em>庄严宣告</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="quote">
+        <span class="mark">“</span>
+        经过全党全国各族人民持续奋斗，我们实现了第一个百年奋斗目标，在中华大地上全面建成了小康社会，历史性地解决了绝对贫困问题，正在意气风发向着全面建成社会主义现代化强国的第二个百年奋斗目标迈进。
+        <span class="src">——习近平总书记代表党和人民庄严宣告</span>
+      </div>
+      <div class="kv">
+        <span>全面建成了小康社会</span>
+        <span>历史性解决绝对贫困问题</span>
+        <span>迈向第二个百年奋斗目标</span>
+      </div>
+    </div>
+    <div class="pagenum">03</div>
+  </section>
+
+  <!-- 4 一个主题 -->
+  <section class="slide">
+    <div class="eyebrow">第二部分</div>
+    <h2 class="title">一个<em>主题</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="display">实现中华民族伟大复兴</div>
+      <div class="quote" style="margin-top:34px;font-size:21px">
+        <span class="mark">“</span>
+        中国共产党一经诞生，就把为中国人民谋幸福、为中华民族谋复兴确立为自己的初心使命。一百年来，中国共产党团结带领中国人民进行的一切奋斗、一切牺牲、一切创造，归结起来就是一个主题：实现中华民族伟大复兴。
+      </div>
+      <div class="kv">
+        <span>初心使命：为中国人民谋幸福</span>
+        <span>为中华民族谋复兴</span>
+      </div>
+    </div>
+    <div class="pagenum">04</div>
+  </section>
+
+  <!-- 5 四个伟大成就总览 -->
+  <section class="slide">
+    <div class="eyebrow">第三部分</div>
+    <h2 class="title">四个<em>伟大成就</em>与四个<em>庄严宣告</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="cards4">
+        <div class="card">
+          <div class="no">01</div>
+          <b>新民主主义革命的伟大成就</b>
+          <small>推翻三座大山，建立中华人民共和国</small>
+          <div class="badge">创造根本社会条件</div>
+        </div>
+        <div class="card">
+          <div class="no">02</div>
+          <b>社会主义革命和建设的伟大成就</b>
+          <small>确立社会主义基本制度，实现伟大飞跃</small>
+          <div class="badge">奠定根本政治前提和制度基础</div>
+        </div>
+        <div class="card">
+          <div class="no">03</div>
+          <b>改革开放和社会主义现代化建设的伟大成就</b>
+          <small>坚定不移推进改革开放</small>
+          <div class="badge">提供体制保证和物质条件</div>
+        </div>
+        <div class="card">
+          <div class="no">04</div>
+          <b>新时代中国特色社会主义的伟大成就</b>
+          <small>从站起来、富起来到强起来</small>
+          <div class="badge">提供制度保证、物质基础、精神力量</div>
+        </div>
+      </div>
+    </div>
+    <div class="pagenum">05</div>
+  </section>
+
+  <!-- 6 成就一 -->
+  <section class="slide">
+    <div class="eyebrow">四个伟大成就 · 之一</div>
+    <h2 class="title">新民主主义革命的<em>伟大成就</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="ach">
+        <div class="num">01</div>
+        <div class="info">
+          <ul>
+            <li>推翻三座大山，建立人民当家作主的中华人民共和国</li>
+            <li>为实现中华民族伟大复兴创造了<b>根本社会条件</b></li>
+          </ul>
+          <div class="claim">
+            <span class="claim-label">庄 严 宣 告</span>
+            中国人民站起来了，中华民族任人宰割、饱受欺凌的时代一去不复返了。
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pagenum">06</div>
+  </section>
+
+  <!-- 7 成就二 -->
+  <section class="slide">
+    <div class="eyebrow">四个伟大成就 · 之二</div>
+    <h2 class="title">社会主义革命和建设的<em>伟大成就</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="ach">
+        <div class="num">02</div>
+        <div class="info">
+          <ul>
+            <li>确立社会主义基本制度，实现一穷二白、人口众多的东方大国大步迈进社会主义社会的伟大飞跃</li>
+            <li>为实现中华民族伟大复兴奠定了<b>根本政治前提和制度基础</b></li>
+          </ul>
+          <div class="claim">
+            <span class="claim-label">庄 严 宣 告</span>
+            中国人民不但善于破坏一个旧世界、也善于建设一个新世界，只有社会主义才能救中国，只有社会主义才能发展中国。
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pagenum">07</div>
+  </section>
+
+  <!-- 8 成就三 -->
+  <section class="slide">
+    <div class="eyebrow">四个伟大成就 · 之三</div>
+    <h2 class="title">改革开放和社会主义现代化建设的<em>伟大成就</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="ach">
+        <div class="num">03</div>
+        <div class="info">
+          <ul>
+            <li>坚定不移推进改革开放</li>
+            <li>为实现中华民族伟大复兴提供了<b>充满新的活力的体制保证和快速发展的物质条件</b></li>
+          </ul>
+          <div class="claim">
+            <span class="claim-label">庄 严 宣 告</span>
+            改革开放是决定当代中国前途命运的关键一招，中国大踏步赶上了时代。
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pagenum">08</div>
+  </section>
+
+  <!-- 9 成就四 -->
+  <section class="slide">
+    <div class="eyebrow">四个伟大成就 · 之四</div>
+    <h2 class="title">新时代中国特色社会主义的<em>伟大成就</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="ach">
+        <div class="num">04</div>
+        <div class="info">
+          <ul>
+            <li>为实现中华民族伟大复兴提供了<b>更为完善的制度保证、更为坚实的物质基础、更为主动的精神力量</b></li>
+          </ul>
+          <div class="claim">
+            <span class="claim-label">庄 严 宣 告</span>
+            中华民族迎来了从站起来、富起来到强起来的伟大飞跃，实现中华民族伟大复兴进入了不可逆转的历史进程。
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pagenum">09</div>
+  </section>
+
+  <!-- 10 伟大建党精神 -->
+  <section class="slide">
+    <div class="eyebrow">第四部分</div>
+    <h2 class="title">伟大<em>建党精神</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="spirit">
+        <div class="item"><i>1</i>坚持真理、坚守理想</div>
+        <div class="item"><i>2</i>践行初心、担当使命</div>
+        <div class="item"><i>3</i>不怕牺牲、英勇斗争</div>
+        <div class="item"><i>4</i>对党忠诚、不负人民</div>
+      </div>
+      <p class="spirit-note">这是<b>中国共产党的精神之源</b>，集中体现了党的理想信念、根本宗旨、优良作风，<br>为立党兴党强党提供了丰厚的精神滋养。</p>
+    </div>
+    <div class="pagenum">10</div>
+  </section>
+
+  <!-- 11 九个必须 1-5 -->
+  <section class="slide">
+    <div class="eyebrow">第五部分 · 以史为鉴 开创未来</div>
+    <h2 class="title"><em>九个必须</em>（上）</h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="nine">
+        <div class="row"><div class="idx">01</div><div class="txt"><b>必须坚持中国共产党坚强领导</b><span>这是中国特色社会主义最本质的特征和最大优势</span></div></div>
+        <div class="row"><div class="idx">02</div><div class="txt"><b>必须团结带领中国人民不断为美好生活而奋斗</b><span>党的根基在人民、血脉在人民、力量在人民</span></div></div>
+        <div class="row"><div class="idx">03</div><div class="txt"><b>必须继续推进马克思主义中国化</b><span>坚持实事求是，从中国实际出发</span></div></div>
+        <div class="row"><div class="idx">04</div><div class="txt"><b>必须坚持和发展中国特色社会主义</b></div></div>
+        <div class="row"><div class="idx">05</div><div class="txt"><b>必须加快国防和军队现代化</b></div></div>
+      </div>
+    </div>
+    <div class="pagenum">11</div>
+  </section>
+
+  <!-- 12 九个必须 6-9 -->
+  <section class="slide">
+    <div class="eyebrow">第五部分 · 以史为鉴 开创未来</div>
+    <h2 class="title"><em>九个必须</em>（下）</h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="nine wide">
+        <div class="row"><div class="idx">06</div><div class="txt"><b>必须不断推动构建人类命运共同体</b></div></div>
+        <div class="row"><div class="idx">07</div><div class="txt"><b>必须进行具有许多新的历史特点的伟大斗争</b></div></div>
+        <div class="row"><div class="idx">08</div><div class="txt"><b>必须加强中华儿女大团结</b></div></div>
+        <div class="row"><div class="idx">09</div><div class="txt"><b>必须不断推进党的建设新的伟大工程</b></div></div>
+      </div>
+    </div>
+    <div class="pagenum">12</div>
+  </section>
+
+  <!-- 13 三个不变 三个绝不 -->
+  <section class="slide">
+    <div class="eyebrow">第六部分</div>
+    <h2 class="title">三个<em>不变</em>与三个<em>绝不</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="cols2">
+        <div class="panel">
+          <h3>三个不变</h3>
+          <p>坚决清除一切损害党的先进性和纯洁性的因素，清除一切侵蚀党的健康肌体的病毒。</p>
+          <p>确保党<strong>不变质、不变色、不变味</strong>。</p>
+          <p>确保党在新时代坚持和发展中国特色社会主义的历史进程中始终成为坚强领导核心。</p>
+        </div>
+        <div class="panel">
+          <h3>三个绝不</h3>
+          <p>任何想把中国共产党同中国人民分割开来、对立起来的企图，都是<strong>绝不会得逞</strong>的。</p>
+          <p><strong>绝不接受</strong>“教师爷”般颐指气使的说教。</p>
+          <p><strong>绝不允许</strong>任何外来势力欺负、压迫、奴役中国人民。</p>
+        </div>
+      </div>
+    </div>
+    <div class="pagenum">13</div>
+  </section>
+
+  <!-- 14 对青年的期望 -->
+  <section class="slide">
+    <div class="eyebrow">殷切期望</div>
+    <h2 class="title">新时代中国青年的<em>志气 · 骨气 · 底气</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="youth">
+        <div class="big3">
+          <div><b>志气</b><small>ZHI QI</small></div>
+          <div><b>骨气</b><small>GU QI</small></div>
+          <div><b>底气</b><small>DI QI</small></div>
+        </div>
+        <p class="line">新时代的中国青年要以实现中华民族伟大复兴为己任，<br>增强做中国人的志气、骨气、底气，<br>不负时代，不负韶华，不负党和人民的殷切期望。</p>
+      </div>
+    </div>
+    <div class="pagenum">14</div>
+  </section>
+
+  <!-- 15 一个号召 -->
+  <section class="slide">
+    <div class="eyebrow">最后部分</div>
+    <h2 class="title">一个<em>号召</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="call">
+        <div class="box">
+          <p>牢记<b>初心使命</b>，坚定<b>理想信念</b>，践行<b>党的宗旨</b>，永远保持同人民群众的血肉联系，始终同人民想在一起、干在一起，风雨同舟、同甘共苦，继续为实现人民对美好生活的向往不懈努力，努力为党和人民争取更大光荣。</p>
+        </div>
+        <div class="kv" style="margin-top:0">
+          <span>牢记初心使命</span>
+          <span>坚定理想信念</span>
+          <span>践行党的宗旨</span>
+          <span>永远保持血肉联系</span>
+        </div>
+      </div>
+    </div>
+    <div class="pagenum">15</div>
+  </section>
+
+  <!-- 16 结语 -->
+  <section class="slide final">
+    <div class="eyebrow">结 语</div>
+    <h2 class="title" style="color:#fff">思想纲领 · 行动指南</h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="chain">
+        <div><b>一个主题</b><small>贯穿百年奋斗</small></div>
+        <div><b>伟大建党精神</b><small>揭示精神之源</small></div>
+        <div><b>四个伟大成就</b><small>总结历史贡献</small></div>
+        <div><b>九个必须</b><small>指引前进方向</small></div>
+      </div>
+      <p class="end">习近平总书记“七一”重要讲话，是激励全党全国各族人民<em>向第二个百年奋斗目标进军</em>的思想纲领和行动指南。</p>
+    </div>
+    <div class="pagenum" style="color:rgba(255,255,255,.45)">16</div>
+  </section>
+
+</div>
+
+<div class="ui" id="progress"></div>
+<div class="ui" id="nav">
+  <button id="prev" title="上一页（←）">‹</button>
+  <button id="next" title="下一页（→ / 空格）">›</button>
+  <button id="full" title="全屏（F）">⛶</button>
+</div>
+<div class="ui" id="counter">01 / 16</div>
+<div class="ui" id="hint">← → 翻页 · F 全屏 · Ctrl+P 导出 PDF</div>
+
+<script>
+(function(){
+  var stage   = document.getElementById('stage');
+  var slides  = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total   = slides.length;
+  var idx     = 0;
+  var progress= document.getElementById('progress');
+  var counter = document.getElementById('counter');
+  var hint    = document.getElementById('hint');
+
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
+
+  function fit(){
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+  }
+
+  function show(i){
+    idx = Math.max(0, Math.min(total - 1, i));
+    slides.forEach(function(el, n){ el.classList.toggle('is-active', n === idx); });
+    progress.style.width = ((idx + 1) / total * 100) + '%';
+    counter.textContent = pad(idx + 1) + ' / ' + total;
+  }
+
+  function next(){ show(idx + 1); }
+  function prev(){ show(idx - 1); }
+
+  document.getElementById('next').addEventListener('click', next);
+  document.getElementById('prev').addEventListener('click', prev);
+  document.getElementById('full').addEventListener('click', function(){
+    if (document.fullscreenElement) { document.exitFullscreen(); }
+    else { document.documentElement.requestFullscreen(); }
+  });
+
+  document.addEventListener('keydown', function(e){
+    switch(e.key){
+      case 'ArrowRight': case 'ArrowDown': case ' ': case 'PageDown': case 'Enter':
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Home': e.preventDefault(); show(0); break;
+      case 'End':  e.preventDefault(); show(total - 1); break;
+      case 'f': case 'F':
+        if (document.fullscreenElement) { document.exitFullscreen(); }
+        else { document.documentElement.requestFullscreen(); }
+        break;
+    }
+  });
+
+  // 触屏 / 鼠标滑动翻页
+  var x0 = null;
+  document.addEventListener('touchstart', function(e){ x0 = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    if (x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 55) { dx < 0 ? next() : prev(); }
+    x0 = null;
+  }, {passive:true});
+
+  window.addEventListener('resize', fit);
+
+  fit();
+  show(0);
+  setTimeout(function(){ hint.style.opacity = '0'; }, 5000);
+})();
+</script>
+</body>
+</html>

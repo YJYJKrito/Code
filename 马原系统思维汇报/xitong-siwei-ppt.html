@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>系统思维 · 小组汇报</title>
+<style>
+  :root{
+    --red:#C8161D;
+    --red-deep:#8E0B12;
+    --red-dark:#4E0408;
+    --gold:#D4AF37;
+    --gold-soft:#EBCE86;
+    --ink:#1F1B18;
+    --muted:#6B6259;
+    --paper:#FDFBF7;
+    --sans:"PingFang SC","Microsoft YaHei","Source Han Sans SC","Noto Sans CJK SC",-apple-system,"Segoe UI",sans-serif;
+    --serif:"Source Han Serif SC","Songti SC","SimSun","Noto Serif CJK SC",serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{
+    height:100%;overflow:hidden;background:#140406;
+    font-family:var(--sans);color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  #stage{
+    position:absolute;left:50%;top:50%;
+    width:1280px;height:720px;
+    transform-origin:center center;
+    box-shadow:0 30px 80px rgba(0,0,0,.55);
+  }
+  .slide{
+    position:absolute;inset:0;
+    padding:60px 76px;
+    background:var(--paper);
+    display:flex;flex-direction:column;
+    opacity:0;visibility:hidden;
+    transition:opacity .38s ease, transform .38s ease;
+    transform:translateX(26px);
+    overflow:hidden;
+  }
+  .slide.is-active{opacity:1;visibility:visible;transform:none;z-index:2}
+  /* 内容较密的页面：压缩页边距与标题，换取正文空间 */
+  .slide.dense{padding:52px 76px}
+  .slide.dense h2.title{font-size:42px}
+
+  /* ---------- 通用版式 ---------- */
+  .eyebrow{
+    font-size:15px;letter-spacing:.28em;color:var(--red);
+    font-weight:600;margin-bottom:14px;
+  }
+  .eyebrow::before{
+    content:"";display:inline-block;width:26px;height:2px;
+    background:var(--red);vertical-align:middle;
+    margin-right:12px;transform:translateY(-3px);
+  }
+  h2.title{
+    font-family:var(--serif);font-size:46px;line-height:1.2;
+    font-weight:700;color:var(--ink);letter-spacing:.01em;
+  }
+  h2.title em{font-style:normal;color:var(--red)}
+  .rule{
+    width:72px;height:4px;border-radius:2px;
+    background:linear-gradient(90deg,var(--red),var(--gold));
+    margin:18px 0 30px;flex:none;
+  }
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0}
+  .pagenum{
+    position:absolute;right:76px;bottom:26px;
+    font-size:13px;color:#B9AFA3;letter-spacing:.12em;
+  }
+  .tag{
+    display:inline-block;padding:5px 14px;border-radius:999px;
+    background:rgba(200,22,29,.08);color:var(--red);
+    font-size:14px;font-weight:600;letter-spacing:.06em;
+    flex:none;
+  }
+  .tag.grey{background:rgba(107,98,89,.1);color:var(--muted)}
+
+  .quote{
+    position:relative;padding:22px 32px 22px 40px;
+    background:#fff;border-radius:4px;
+    border-left:5px solid var(--red);
+    box-shadow:0 6px 22px rgba(31,27,24,.07);
+    font-family:var(--serif);font-size:21px;line-height:1.7;
+    color:#2A2320;
+  }
+  .quote .mark{
+    position:absolute;left:12px;top:-6px;
+    font-family:Georgia,serif;font-size:56px;color:rgba(200,22,29,.16);
+    line-height:1;
+  }
+  .quote .src{
+    display:block;margin-top:12px;font-family:var(--sans);
+    font-size:14px;color:var(--muted);letter-spacing:.04em;
+  }
+
+  /* ---------- 封面 ---------- */
+  .cover{
+    background:
+      radial-gradient(1100px 620px at 82% -10%, rgba(212,175,55,.20), transparent 62%),
+      radial-gradient(760px 520px at 6% 108%, rgba(212,175,55,.13), transparent 60%),
+      linear-gradient(140deg,#8E0B12 0%,#67060C 46%,#3B0307 100%);
+    color:#fff;justify-content:center;padding:0 96px;
+  }
+  .cover::after{
+    content:"";position:absolute;right:-120px;top:-120px;
+    width:520px;height:520px;border-radius:50%;
+    border:1px solid rgba(235,206,134,.22);
+    box-shadow:0 0 0 60px rgba(235,206,134,.05), 0 0 0 130px rgba(235,206,134,.03);
+  }
+  .cover .eyebrow{color:var(--gold-soft)}
+  .cover .eyebrow::before{background:var(--gold-soft)}
+  .cover h1{
+    font-family:var(--serif);font-size:96px;line-height:1.12;
+    font-weight:700;letter-spacing:.08em;text-shadow:0 4px 24px rgba(0,0,0,.3);
+  }
+  .cover .sub{
+    margin-top:26px;font-size:20px;line-height:1.7;
+    color:rgba(255,255,255,.82);max-width:860px;
+  }
+  .cover .hairline{
+    width:120px;height:3px;background:var(--gold);
+    margin:34px 0 30px;border-radius:2px;
+  }
+  .cover .chips{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+  .cover .chips span{
+    padding:8px 18px;border:1px solid rgba(235,206,134,.45);
+    border-radius:999px;font-size:15px;color:var(--gold-soft);
+    letter-spacing:.06em;
+  }
+
+  /* ---------- 目录 ---------- */
+  .toc{display:grid;grid-template-columns:1fr 1fr;gap:18px 34px;align-content:center}
+  .toc-item{
+    display:flex;gap:20px;align-items:flex-start;
+    padding:16px 20px;border-radius:6px;
+    background:#fff;border:1px solid #EFE7DA;
+  }
+  .toc-item .no{
+    font-family:Georgia,serif;font-size:30px;font-weight:700;
+    color:var(--red);opacity:.85;line-height:1;min-width:46px;
+  }
+  .toc-item b{display:block;font-size:21px;font-weight:700;margin-bottom:6px;font-family:var(--serif)}
+  .toc-item small{font-size:14.5px;color:var(--muted);line-height:1.6}
+
+  /* ---------- 单点页（大编号 + 要点） ---------- */
+  .ach{display:flex;gap:44px;align-items:flex-start}
+  .ach .num{
+    font-family:Georgia,serif;font-size:118px;font-weight:700;line-height:.82;
+    color:transparent;-webkit-text-stroke:2px rgba(200,22,29,.32);
+    flex:none;
+  }
+  .ach .info{flex:1}
+  .ach ul{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:26px}
+  .ach li{position:relative;padding-left:24px;font-size:19px;line-height:1.7;color:#332C27}
+  .ach li::before{
+    content:"";position:absolute;left:0;top:13px;
+    width:8px;height:8px;border-radius:2px;background:var(--gold);
+    transform:rotate(45deg);
+  }
+  .ach li b{color:var(--red-deep)}
+  .ach .claim{
+    padding:18px 26px;border-radius:4px;
+    background:linear-gradient(90deg,rgba(200,22,29,.07),rgba(200,22,29,.02));
+    border-left:4px solid var(--red);
+    font-family:var(--serif);font-size:20px;line-height:1.7;color:#2A2320;
+  }
+  .claim-label{font-size:13px;font-weight:700;color:var(--red);letter-spacing:.16em;display:block;margin-bottom:10px;font-family:var(--sans)}
+
+  /* ---------- 两栏面板 ---------- */
+  .cols2{display:grid;grid-template-columns:1fr 1fr;gap:34px;align-content:center}
+  .panel{
+    background:#fff;border:1px solid #EFE7DA;border-radius:10px;
+    padding:32px 32px 30px;height:100%;
+    box-shadow:0 8px 26px rgba(31,27,24,.06);
+    display:flex;flex-direction:column;
+  }
+  .panel h3{
+    font-family:var(--serif);font-size:27px;color:var(--red);
+    padding-bottom:16px;margin-bottom:22px;border-bottom:1px dashed #E7DCCA;
+  }
+  .panel h3 small{
+    font-family:var(--sans);font-size:14px;font-weight:400;
+    color:var(--muted);letter-spacing:.06em;margin-left:10px;
+  }
+  .panel p{font-size:18px;line-height:1.9;color:#332C27}
+  .panel p+p{margin-top:18px}
+  .panel strong,.panel b{color:var(--red-deep)}
+  /* 紧凑变体：用于上下还有其它版块的页面 */
+  .dense2 .panel{padding:24px 28px 22px}
+  .dense2 .panel h3{font-size:24px;padding-bottom:12px;margin-bottom:16px}
+  .dense2 .panel p{font-size:17.5px;line-height:1.78}
+  .dense2 .panel p+p{margin-top:12px}
+
+  /* ---------- 三个摒弃 → 四个坚持 ---------- */
+  .shift{display:grid;grid-template-columns:1fr 62px 1fr;align-items:stretch}
+  .side{
+    background:#fff;border:1px solid #EFE7DA;border-radius:10px;
+    padding:22px 26px;box-shadow:0 8px 24px rgba(31,27,24,.06);
+  }
+  .side h4{
+    font-family:var(--serif);font-size:21px;margin-bottom:16px;
+    display:flex;align-items:baseline;gap:10px;
+  }
+  .side h4 span{
+    font-family:var(--sans);font-size:12.5px;font-weight:400;
+    color:var(--muted);letter-spacing:.08em;
+  }
+  .side.bad h4{color:#8A7F73}
+  .side.good h4{color:var(--red)}
+  .pills{display:flex;gap:10px;flex-wrap:wrap}
+  .pills span{
+    padding:9px 16px;border-radius:6px;font-size:16px;font-weight:600;
+  }
+  .side.bad .pills span{
+    background:#F3EFE8;color:#8A7F73;
+    text-decoration:line-through;text-decoration-color:rgba(200,22,29,.4);
+  }
+  .side.good .pills span{background:rgba(200,22,29,.08);color:var(--red)}
+  .shift .arrow{
+    display:flex;align-items:center;justify-content:center;
+    font-family:Georgia,serif;font-size:28px;color:var(--gold);
+  }
+
+  /* ---------- 结论 / 提示条 ---------- */
+  .defbar{
+    padding:20px 30px;border-radius:8px;background:#fff;
+    border:1px solid #EFE7DA;border-left:5px solid var(--red);
+    box-shadow:0 8px 24px rgba(31,27,24,.06);
+    font-family:var(--serif);font-size:20px;line-height:1.72;color:#2A2320;
+  }
+  .defbar b{color:var(--red)}
+  .defbar .lbl{
+    font-family:var(--sans);font-size:12.5px;font-weight:700;
+    letter-spacing:.18em;color:var(--red);display:block;margin-bottom:9px;
+  }
+  .passage{
+    display:flex;gap:14px;align-items:center;
+    padding:13px 20px;border-radius:6px;
+    background:rgba(107,98,89,.06);border:1px dashed #DCD2C2;
+  }
+  .passage p{font-size:16px;color:var(--muted);line-height:1.6}
+  .passage p b{color:#4A423A}
+  .note{
+    font-size:16px;line-height:1.7;color:var(--muted);text-align:center;
+  }
+  .note b{color:var(--red-deep);font-family:var(--serif);font-size:18px}
+  .proposition{
+    text-align:center;font-family:var(--serif);
+    font-size:25px;font-weight:700;color:var(--ink);letter-spacing:.02em;
+  }
+  .proposition span{
+    font-family:var(--sans);font-size:13px;font-weight:700;
+    letter-spacing:.18em;color:var(--red);display:block;margin-bottom:9px;
+  }
+  .proposition em{font-style:normal;color:var(--red)}
+  .claimbar{
+    padding:18px 28px;border-radius:6px;
+    background:linear-gradient(90deg,rgba(200,22,29,.08),rgba(200,22,29,.02));
+    border-left:4px solid var(--red);
+    font-family:var(--serif);font-size:19px;line-height:1.7;color:#2A2320;
+  }
+  .claimbar b{color:var(--red);font-weight:700}
+
+  /* ---------- 整体 ≠ 部分之和 ---------- */
+  .formula{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .fbox{
+    background:#fff;border:1px solid #EFE7DA;border-radius:10px;
+    padding:22px 28px;border-top:4px solid var(--red);
+    box-shadow:0 8px 24px rgba(31,27,24,.06);
+  }
+  .fbox.bad{border-top-color:#C3B9AC}
+  .fbox .fsym{
+    font-family:Georgia,serif;font-size:38px;font-weight:700;
+    color:var(--red);line-height:1;letter-spacing:.02em;
+  }
+  .fbox.bad .fsym{color:#9A9089}
+  .fbox .fsub{margin-top:12px;font-size:16.5px;line-height:1.7;color:#332C27}
+  .fbox .fsub b{color:var(--red-deep)}
+
+  /* ---------- 风险传导链条 ---------- */
+  .chain-flow{display:flex;align-items:stretch}
+  .cf-node{
+    flex:1;text-align:center;background:#fff;
+    border:1px solid #EFE7DA;border-radius:8px;padding:15px 10px;
+    box-shadow:0 6px 18px rgba(31,27,24,.05);
+  }
+  .cf-node b{
+    display:block;font-family:var(--serif);font-size:19px;
+    color:var(--ink);margin-bottom:6px;line-height:1.3;
+  }
+  .cf-node span{font-size:14px;color:var(--muted);line-height:1.5}
+  .cf-node.hot{background:rgba(200,22,29,.06);border-color:rgba(200,22,29,.28)}
+  .cf-node.hot b{color:var(--red)}
+  .cf-arrow{
+    flex:none;width:46px;display:flex;align-items:center;justify-content:center;
+    font-family:Georgia,serif;font-size:22px;color:var(--gold);
+  }
+
+  /* ---------- 流域分级举措 ---------- */
+  .stages{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .stage{
+    background:#fff;border:1px solid #EFE7DA;border-radius:8px;
+    padding:17px 12px;text-align:center;
+    border-bottom:3px solid var(--gold);
+    box-shadow:0 6px 18px rgba(31,27,24,.05);
+  }
+  .stage i{
+    display:block;font-style:normal;font-size:13px;font-weight:700;
+    letter-spacing:.14em;color:var(--red);margin-bottom:9px;
+  }
+  .stage b{font-family:var(--serif);font-size:17.5px;color:#2A2320;line-height:1.4}
+
+  /* ---------- 领域标签行 ---------- */
+  .domains{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+  .domains span{
+    padding:9px 22px;border-radius:999px;
+    background:#fff;border:1px solid #EFE7DA;
+    font-size:16.5px;font-weight:600;color:#3A322C;
+    box-shadow:0 4px 14px rgba(31,27,24,.05);
+  }
+  .domains span.hot{
+    background:rgba(200,22,29,.08);border-color:rgba(200,22,29,.28);color:var(--red);
+  }
+
+  /* ---------- 时代价值页：文字 + 配图 ---------- */
+  .val{display:grid;grid-template-columns:1fr 400px;gap:46px;align-items:center}
+  .val ul{list-style:none;display:flex;flex-direction:column;gap:15px;margin-bottom:26px}
+  .val li{position:relative;padding-left:26px;font-size:19px;line-height:1.7;color:#332C27}
+  .val li::before{
+    content:"";position:absolute;left:0;top:13px;
+    width:8px;height:8px;border-radius:2px;background:var(--gold);
+    transform:rotate(45deg);
+  }
+  .val li b{color:var(--red-deep)}
+  .val .claim{
+    padding:18px 26px;border-radius:4px;
+    background:linear-gradient(90deg,rgba(200,22,29,.07),rgba(200,22,29,.02));
+    border-left:4px solid var(--red);
+    font-family:var(--serif);font-size:19px;line-height:1.7;color:#2A2320;
+  }
+  .val .claim b{color:var(--red)}
+  .figure{
+    background:#fff;border:1px solid #EFE7DA;border-radius:12px;
+    box-shadow:0 12px 34px rgba(31,27,24,.09);overflow:hidden;
+  }
+  .figure svg{display:block;width:100%;height:auto}
+  .figure svg text{font-family:var(--sans)}
+
+  /* ---------- 结语 ---------- */
+  .final{
+    background:
+      radial-gradient(900px 520px at 88% 4%, rgba(212,175,55,.18), transparent 60%),
+      linear-gradient(140deg,#8E0B12 0%,#66060C 48%,#3B0307 100%);
+    color:#fff;justify-content:center;
+  }
+  .final .eyebrow{color:var(--gold-soft)}
+  .final .eyebrow::before{background:var(--gold-soft)}
+  .final .chain{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:8px 0 34px;
+  }
+  .final .chain div{
+    padding:22px 20px;border-radius:8px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(235,206,134,.3);
+  }
+  .final .chain b{
+    display:block;font-family:var(--serif);font-size:23px;color:var(--gold-soft);
+    margin-bottom:10px;
+  }
+  .final .chain small{font-size:14.5px;line-height:1.65;color:rgba(255,255,255,.78)}
+  .final .end{
+    font-family:var(--serif);font-size:25px;line-height:1.85;
+    color:#fff;max-width:1040px;
+  }
+  .final .end em{font-style:normal;color:var(--gold-soft)}
+
+  /* ---------- 致谢页 ---------- */
+  .thanks{align-items:center;text-align:center;justify-content:center}
+  .thanks .eyebrow{margin-bottom:22px}
+  .thanks .big{
+    font-family:var(--serif);font-size:82px;font-weight:700;
+    color:#fff;letter-spacing:.16em;line-height:1.15;
+    text-shadow:0 6px 30px rgba(0,0,0,.35);
+  }
+  .thanks .hairline{
+    width:150px;height:3px;background:var(--gold);
+    margin:34px auto 30px;border-radius:2px;
+  }
+  .thanks .sub{font-size:21px;line-height:1.8;color:rgba(255,255,255,.84);letter-spacing:.04em}
+  .thanks .meta{
+    margin-top:40px;font-size:15px;letter-spacing:.14em;
+    color:rgba(235,206,134,.72);
+  }
+
+  /* ---------- 控件 ---------- */
+  .ui{position:fixed;z-index:50}
+  #progress{
+    left:0;bottom:0;height:3px;width:0;
+    background:linear-gradient(90deg,var(--red),var(--gold));
+    transition:width .35s ease;
+  }
+  #counter{
+    right:22px;bottom:16px;color:rgba(255,255,255,.6);
+    font-size:13px;letter-spacing:.16em;font-family:Georgia,serif;
+    user-select:none;
+  }
+  #nav{left:22px;bottom:12px;display:flex;gap:8px}
+  #nav button{
+    width:38px;height:38px;border-radius:50%;cursor:pointer;
+    background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.22);
+    color:rgba(255,255,255,.8);font-size:16px;line-height:1;
+    transition:background .2s,border-color .2s;
+  }
+  #nav button:hover{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.45)}
+  #hint{
+    left:50%;transform:translateX(-50%);bottom:18px;
+    color:rgba(255,255,255,.42);font-size:13px;letter-spacing:.1em;
+    transition:opacity .6s ease;user-select:none;
+  }
+
+  /* ---------- 打印 / 导出 PDF ---------- */
+  @page{size:33.87cm 19.05cm;margin:0}
+  @media print{
+    html,body{overflow:visible;height:auto;background:#fff}
+    #stage{position:static;transform:none!important;width:1280px;height:auto;box-shadow:none}
+    .slide{
+      position:relative;opacity:1!important;visibility:visible!important;
+      transform:none!important;height:720px;
+      break-after:page;page-break-after:always;
+    }
+    .slide:last-child{break-after:auto;page-break-after:auto}
+    .ui{display:none!important}
+    .slide.final,.slide.cover,.slide.thanks{
+      -webkit-print-color-adjust:exact;print-color-adjust:exact;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+  <!-- 01 封面 -->
+  <section class="slide cover is-active">
+    <div class="eyebrow">马克思主义基本原理 · 小组汇报</div>
+    <h1>系统思维</h1>
+    <div class="hairline"></div>
+    <p class="sub">理论内涵 · 现实实践 · 时代价值<br>
+       ——坚持系统观念，用整体、联系、发展的眼光认识世界</p>
+    <div class="chips">
+      <span>普遍联系</span>
+      <span>整体性</span>
+      <span>层次性</span>
+      <span>开放性</span>
+    </div>
+  </section>
+
+  <!-- 02 目录 -->
+  <section class="slide">
+    <div class="eyebrow">内容提要</div>
+    <h2 class="title">从<em>科学内涵</em>到<em>时代价值</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="toc">
+        <div class="toc-item"><div class="no">01</div><div><b>思想根基</b><small>普遍联系原理与坚持系统观念</small></div></div>
+        <div class="toc-item"><div class="no">02</div><div><b>科学内涵</b><small>系统的特征与整体性规律</small></div></div>
+        <div class="toc-item"><div class="no">03</div><div><b>实践印证</b><small>长江大保护</small></div></div>
+        <div class="toc-item"><div class="no">04</div><div><b>实践印证</b><small>总体国家安全观</small></div></div>
+        <div class="toc-item"><div class="no">05</div><div><b>时代价值</b><small>认识工具与科学方法论</small></div></div>
+        <div class="toc-item"><div class="no">06</div><div><b>时代价值</b><small>新时代青年的成长启示</small></div></div>
+      </div>
+    </div>
+    <div class="pagenum">02</div>
+  </section>
+
+  <!-- 03 思想根基 -->
+  <section class="slide dense">
+    <div class="eyebrow">理论内涵 · 之一</div>
+    <h2 class="title">思想根基：<em>普遍联系</em>与系统观念</h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="quote">
+        <span class="mark">“</span>
+        必须坚持系统观念 —— 系统观念是<b>具有基础性的思想和工作方法</b>。
+        <span class="src">——党的二十大报告 · 习近平新时代中国特色社会主义思想的世界观和方法论</span>
+      </div>
+      <div class="shift" style="margin-top:26px">
+        <div class="side bad">
+          <h4>跳出<span>两种片面眼光</span></h4>
+          <div class="pills">
+            <span>片面地看问题</span>
+            <span>碎片化地看问题</span>
+          </div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="side good">
+          <h4>把握<span>四个基本维度</span></h4>
+          <div class="pills">
+            <span>整体性</span>
+            <span>结构性</span>
+            <span>层次性</span>
+            <span>开放性</span>
+          </div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:24px">理论源头：<b>唯物辩证法关于普遍联系的基本观点</b>　——　世界一切事物都处在相互联系之中，不存在完全孤立的事物</p>
+    </div>
+    <div class="pagenum">03</div>
+  </section>
+
+  <!-- 04 科学内涵 -->
+  <section class="slide dense">
+    <div class="eyebrow">理论内涵 · 之二</div>
+    <h2 class="title">什么是系统：<em>整体</em>不等于<em>部分之和</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="defbar">
+        <span class="lbl">系 统 的 定 义</span>
+        由相互联系、相互作用的若干要素，按照一定结构组成的<b>有机统一整体</b>。
+      </div>
+      <div class="formula" style="margin-top:22px">
+        <div class="fbox">
+          <div class="fsym">1 ＋ 1 ＞ 2</div>
+          <div class="fsub">要素<b>协同配合</b> → 整体功能大于部分功能之和</div>
+        </div>
+        <div class="fbox bad">
+          <div class="fsym">1 ＋ 1 &lt; 2</div>
+          <div class="fsub">要素<b>相互割裂、结构混乱</b> → 整体效果大打折扣</div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:24px">系统具有<b>层次性</b>，大系统之中包含众多子系统；系统又是<b>开放的</b>，不断与外部环境进行物质、能量、信息的交换</p>
+    </div>
+    <div class="pagenum">04</div>
+  </section>
+
+  <!-- 05 长江大保护 -->
+  <section class="slide dense">
+    <div class="eyebrow">实践印证 · 之一</div>
+    <h2 class="title">长江大保护：<em>全流域一盘棋</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="passage">
+        <span class="tag grey">过去</span>
+        <p>各地区、各部门<b>分头管理、各管一段</b>，治理工作碎片化，生态问题难以根治</p>
+      </div>
+      <p class="note" style="margin:22px 0 18px">运用系统思维，不再只盯着水体本身，而是<b>统筹上下游、左右岸</b>，把生态修复、产业转型、民生安置协同推进</p>
+      <div class="stages">
+        <div class="stage"><i>上 游</i><b>水源涵养</b></div>
+        <div class="stage"><i>中 游</i><b>水土保持</b></div>
+        <div class="stage"><i>沿 江</i><b>严控污染项目</b></div>
+        <div class="stage"><i>民 生</i><b>渔民退捕安置</b></div>
+      </div>
+      <div class="claimbar" style="margin-top:22px">
+        长江流域是<b>山水林田湖草沙</b>共同构成的有机生态整体 —— 全流域一盘棋的综合治理，使长江水质明显改善，实现<b>生态、经济、社会效益</b>协同提升。
+      </div>
+    </div>
+    <div class="pagenum">05</div>
+  </section>
+
+  <!-- 06 总体国家安全观 -->
+  <section class="slide dense">
+    <div class="eyebrow">实践印证 · 之二</div>
+    <h2 class="title">总体国家安全观：<em>大安全格局</em></h2>
+    <div class="rule"></div>
+    <div class="body">
+      <p class="note" style="margin-bottom:18px">国家安全不是单一领域的安全，而是由多个子系统共同构成的<b>大安全格局</b>，风险能够<b>跨领域相互传导</b></p>
+      <div class="domains" style="margin-bottom:24px">
+        <span>粮食安全</span>
+        <span class="hot">科技安全</span>
+        <span class="hot">产业链安全</span>
+        <span>社会安全</span>
+      </div>
+      <div class="chain-flow">
+        <div class="cf-node hot"><b>高端芯片</b><span>供应出现问题</span></div>
+        <div class="cf-arrow">→</div>
+        <div class="cf-node"><b>产业链</b><span>风险逐级传导</span></div>
+        <div class="cf-arrow">→</div>
+        <div class="cf-node"><b>下游制造业</b><span>生产受到影响</span></div>
+        <div class="cf-arrow">→</div>
+        <div class="cf-node hot"><b>企业经营</b><span>波及社会就业</span></div>
+      </div>
+      <div class="claimbar" style="margin-top:24px">
+        树立总体的大安全格局，<b>统筹协调各个安全领域</b>；同时推动构建国内国际双循环，保持系统<b>对内对外双向开放</b>，在内外要素流动中维护国家整体安全。
+      </div>
+    </div>
+    <div class="pagenum">06</div>
+  </section>
+
+  <!-- 07 时代价值一 -->
+  <section class="slide dense">
+    <div class="eyebrow">时代价值 · 之一</div>
+    <h2 class="title">认识<em>复杂现代社会</em>的重要工具</h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="val">
+        <div class="txt">
+          <ul>
+            <li>当今社会各个领域<b>深度交织</b>，事物之间的联系更加多元复杂，很多社会问题都不是单一原因造成的</li>
+            <li>如果“头痛医头、脚痛医脚”，只看局部现象，就<b>无法抓住问题的本质</b></li>
+            <li>系统思维引导我们梳理事物内部的<b>要素关系</b>，把握问题背后的复杂链条</li>
+          </ul>
+          <div class="claim">
+            <span class="claim-label">核 心 要 义</span>
+            从局部现象转向要素关联 —— 更加<b>全面、客观</b>地分析现实问题。
+          </div>
+        </div>
+        <div class="figure">
+          <svg viewBox="0 0 400 430" role="img" aria-label="复杂关联网络示意图：孤立的现象点连成相互关联的网络">
+            <!-- 普通关联 -->
+            <g stroke="#D8CFC0" stroke-width="1.6" fill="none">
+              <line x1="86" y1="96" x2="172" y2="64"/>
+              <line x1="172" y1="64" x2="262" y2="92"/>
+              <line x1="262" y1="92" x2="332" y2="138"/>
+              <line x1="332" y1="138" x2="290" y2="200"/>
+              <line x1="290" y1="200" x2="344" y2="248"/>
+              <line x1="344" y1="248" x2="302" y2="310"/>
+              <line x1="302" y1="310" x2="208" y2="300"/>
+              <line x1="208" y1="300" x2="112" y2="272"/>
+              <line x1="112" y1="272" x2="70" y2="186"/>
+              <line x1="70" y1="186" x2="86" y2="96"/>
+              <line x1="262" y1="92" x2="290" y2="200"/>
+              <line x1="166" y1="340" x2="208" y2="300"/>
+              <line x1="166" y1="340" x2="112" y2="272"/>
+            </g>
+            <!-- 问题背后的关联链条 -->
+            <g stroke="#C8161D" stroke-width="2.6" fill="none" stroke-linecap="round">
+              <line x1="198" y1="176" x2="172" y2="64"/>
+              <line x1="198" y1="176" x2="70" y2="186"/>
+              <line x1="198" y1="176" x2="290" y2="200"/>
+              <line x1="198" y1="176" x2="208" y2="300"/>
+            </g>
+            <!-- 核心节点光晕 -->
+            <circle cx="198" cy="176" r="34" fill="rgba(200,22,29,.07)"
+                    stroke="rgba(200,22,29,.28)" stroke-width="1.5" stroke-dasharray="5 5"/>
+            <!-- 一般要素点 -->
+            <g fill="#F1EBE0" stroke="#DCD2C2" stroke-width="1.5">
+              <circle cx="86" cy="96" r="9"/>
+              <circle cx="172" cy="64" r="13"/>
+              <circle cx="262" cy="92" r="9"/>
+              <circle cx="332" cy="138" r="11"/>
+              <circle cx="70" cy="186" r="8"/>
+              <circle cx="290" cy="200" r="11"/>
+              <circle cx="344" cy="248" r="7"/>
+              <circle cx="112" cy="272" r="12"/>
+              <circle cx="208" cy="300" r="9"/>
+              <circle cx="302" cy="310" r="8"/>
+              <circle cx="166" cy="340" r="6"/>
+            </g>
+            <!-- 问题节点 -->
+            <circle cx="198" cy="176" r="18" fill="#C8161D"/>
+            <rect x="0" y="366" width="400" height="64" fill="#FAF7F2"/>
+            <line x1="0" y1="366" x2="400" y2="366" stroke="#EFE7DA" stroke-width="1"/>
+            <text x="200" y="404" text-anchor="middle" font-size="16" fill="#6B6259" letter-spacing="1">从孤立现象到要素关联</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="pagenum">07</div>
+  </section>
+
+  <!-- 08 时代价值二 -->
+  <section class="slide dense">
+    <div class="eyebrow">时代价值 · 之二</div>
+    <h2 class="title">推动<em>高质量发展</em>的科学方法论</h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="val">
+        <div class="txt">
+          <ul>
+            <li>高质量发展是一项复杂的<b>系统工程</b>，不是单纯追求经济增长，而是兼顾经济、生态、社会、民生等多重目标</li>
+            <li>无论是<b>区域协同发展</b>，还是社会事业建设，都需要统筹多方诉求</li>
+            <li>协调不同子系统之间的关系，推动各项事业<b>相互促进</b>，实现整体的协调进步</li>
+          </ul>
+          <div class="claim">
+            <span class="claim-label">核 心 要 义</span>
+            多重目标之间不是取舍关系，而是<b>统筹关系</b>。
+          </div>
+        </div>
+        <div class="figure">
+          <svg viewBox="0 0 400 430" role="img" aria-label="多重目标协同循环示意图：经济、生态、社会、民生相互促进">
+            <defs>
+              <marker id="arw8" viewBox="0 0 10 10" refX="8" refY="5"
+                      markerWidth="5.5" markerHeight="5.5" orient="auto">
+                <path d="M0,0 L10,5 L0,10 z" fill="#D4AF37"/>
+              </marker>
+            </defs>
+            <!-- 相互促进的循环 -->
+            <g fill="none" stroke="#D4AF37" stroke-width="2.4" marker-end="url(#arw8)">
+              <path d="M 232.5,93.7 A 95,95 0 0 1 289.3,150.5"/>
+              <path d="M 289.3,215.5 A 95,95 0 0 1 232.5,272.3"/>
+              <path d="M 167.5,272.3 A 95,95 0 0 1 110.7,215.5"/>
+              <path d="M 110.7,150.5 A 95,95 0 0 1 167.5,93.7"/>
+            </g>
+            <circle cx="200" cy="183" r="46" fill="#C8161D"/>
+            <text x="200" y="189" text-anchor="middle" font-size="16" fill="#fff" letter-spacing="1">统筹协调</text>
+            <!-- 四个子系统 -->
+            <g fill="#fff" stroke="#C8161D" stroke-width="2.4">
+              <circle cx="200" cy="88" r="32"/>
+              <circle cx="295" cy="183" r="32"/>
+              <circle cx="200" cy="278" r="32"/>
+              <circle cx="105" cy="183" r="32"/>
+            </g>
+            <g fill="#C8161D" font-size="17" text-anchor="middle" font-weight="600">
+              <text x="200" y="94">经济</text>
+              <text x="295" y="189">生态</text>
+              <text x="200" y="284">社会</text>
+              <text x="105" y="189">民生</text>
+            </g>
+            <rect x="0" y="366" width="400" height="64" fill="#FAF7F2"/>
+            <line x1="0" y1="366" x2="400" y2="366" stroke="#EFE7DA" stroke-width="1"/>
+            <text x="200" y="404" text-anchor="middle" font-size="16" fill="#6B6259" letter-spacing="1">协调子系统 · 相互促进</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="pagenum">08</div>
+  </section>
+
+  <!-- 09 时代价值三 -->
+  <section class="slide dense">
+    <div class="eyebrow">时代价值 · 之三</div>
+    <h2 class="title">新时代<em>青年成长</em>的深刻启示</h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="val">
+        <div class="txt">
+          <ul>
+            <li>每个人的成长本身也是一个有机系统，不只有学业成绩，还包含<b>身心健康、实践能力、品德素养</b>等诸多要素</li>
+            <li>摒弃只看重绩点的<b>单点思维</b>，统筹好学习、生活与社会实践，追求自身的全面发展</li>
+            <li>个人发展作为社会大系统中的<b>子系统</b>，应当主动保持开放，积极参与社会实践</li>
+          </ul>
+          <div class="claim">
+            <span class="claim-label">核 心 要 义</span>
+            把个人理想融入时代发展大局，<b>在服务社会的过程中实现自我价值</b>。
+          </div>
+        </div>
+        <div class="figure">
+          <svg viewBox="0 0 400 430" role="img" aria-label="个人成长作为社会大系统子系统的同心圆示意图">
+            <!-- 社会大系统边界 -->
+            <circle cx="200" cy="183" r="136" fill="none" stroke="#A07C18"
+                    stroke-width="2" stroke-dasharray="8 8" opacity="0.55"/>
+            <rect x="134" y="32" width="132" height="34" fill="#fff"/>
+            <text x="200" y="53" text-anchor="middle" font-size="15" fill="#A07C18" letter-spacing="1.5">社会大系统</text>
+            <!-- 个人系统内部的要素关联 -->
+            <g stroke="#DCD2C2" stroke-width="2" stroke-linecap="round">
+              <line x1="232.5" y1="150.5" x2="252.3" y2="130.7"/>
+              <line x1="167.5" y1="150.5" x2="147.7" y2="130.7"/>
+              <line x1="167.5" y1="215.5" x2="147.7" y2="235.3"/>
+              <line x1="232.5" y1="215.5" x2="252.3" y2="235.3"/>
+            </g>
+            <!-- 个人成长 -->
+            <circle cx="200" cy="183" r="46" fill="#C8161D"/>
+            <text x="200" y="189" text-anchor="middle" font-size="15" fill="#fff" letter-spacing="1">个人成长</text>
+            <!-- 成长的四个要素 -->
+            <g fill="#fff" stroke="#D4AF37" stroke-width="2.2">
+              <circle cx="270.7" cy="112.3" r="26"/>
+              <circle cx="129.3" cy="112.3" r="26"/>
+              <circle cx="129.3" cy="253.7" r="26"/>
+              <circle cx="270.7" cy="253.7" r="26"/>
+            </g>
+            <g fill="#8E0B12" font-size="15" text-anchor="middle" font-weight="600">
+              <text x="270.7" y="118">学业</text>
+              <text x="129.3" y="118">身心</text>
+              <text x="129.3" y="259">实践</text>
+              <text x="270.7" y="259">品德</text>
+            </g>
+            <rect x="0" y="366" width="400" height="64" fill="#FAF7F2"/>
+            <line x1="0" y1="366" x2="400" y2="366" stroke="#EFE7DA" stroke-width="1"/>
+            <text x="200" y="404" text-anchor="middle" font-size="16" fill="#6B6259" letter-spacing="1">小系统融入大系统</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="pagenum">09</div>
+  </section>
+
+  <!-- 10 结语 -->
+  <section class="slide final">
+    <div class="eyebrow">结 语</div>
+    <h2 class="title" style="color:#fff">拒绝只见树木 · 不见森林</h2>
+    <div class="rule"></div>
+    <div class="body">
+      <div class="chain">
+        <div><b>整体</b><small>把握事物的全局</small></div>
+        <div><b>联系</b><small>梳理要素的关联</small></div>
+        <div><b>发展</b><small>着眼过程的演进</small></div>
+        <div><b>统筹兼顾</b><small>把握联系 · 处理问题</small></div>
+      </div>
+      <p class="end">系统思维教会我们用<em>整体、联系、发展</em>的眼光看待世界。在今后的学习和生活中，我们也应当自觉掌握这一科学的思维方法，更好地认识世界、处理问题。</p>
+    </div>
+    <div class="pagenum" style="color:rgba(255,255,255,.45)">10</div>
+  </section>
+
+  <!-- 11 致谢 -->
+  <section class="slide final thanks">
+    <div class="eyebrow">汇 报 完 毕</div>
+    <div class="big">谢谢大家</div>
+    <div class="hairline"></div>
+    <p class="sub">敬请各位老师和同学批评指正</p>
+    <p class="meta">马克思主义基本原理 · 小组汇报</p>
+  </section>
+
+</div>
+
+<div class="ui" id="progress"></div>
+<div class="ui" id="nav">
+  <button id="prev" title="上一页（←）">‹</button>
+  <button id="next" title="下一页（→ / 空格）">›</button>
+  <button id="full" title="全屏（F）">⛶</button>
+</div>
+<div class="ui" id="counter">01 / 11</div>
+<div class="ui" id="hint">← → 翻页 · F 全屏 · Ctrl+P 导出 PDF</div>
+
+<script>
+(function(){
+  var stage   = document.getElementById('stage');
+  var slides  = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total   = slides.length;
+  var idx     = 0;
+  var progress= document.getElementById('progress');
+  var counter = document.getElementById('counter');
+  var hint    = document.getElementById('hint');
+
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
+
+  function fit(){
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = 'translate(-50%,-50%) scale(' + s + ')';
+  }
+
+  function show(i){
+    idx = Math.max(0, Math.min(total - 1, i));
+    slides.forEach(function(el, n){ el.classList.toggle('is-active', n === idx); });
+    progress.style.width = ((idx + 1) / total * 100) + '%';
+    counter.textContent = pad(idx + 1) + ' / ' + total;
+    try { location.hash = 'p' + (idx + 1); } catch(e){}
+  }
+
+  function next(){ show(idx + 1); }
+  function prev(){ show(idx - 1); }
+
+  document.getElementById('next').addEventListener('click', next);
+  document.getElementById('prev').addEventListener('click', prev);
+  document.getElementById('full').addEventListener('click', function(){
+    if (document.fullscreenElement) { document.exitFullscreen(); }
+    else { document.documentElement.requestFullscreen(); }
+  });
+
+  document.addEventListener('keydown', function(e){
+    switch(e.key){
+      case 'ArrowRight': case 'ArrowDown': case ' ': case 'PageDown': case 'Enter':
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'ArrowUp': case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Home': e.preventDefault(); show(0); break;
+      case 'End':  e.preventDefault(); show(total - 1); break;
+      case 'f': case 'F':
+        if (document.fullscreenElement) { document.exitFullscreen(); }
+        else { document.documentElement.requestFullscreen(); }
+        break;
+      case '?': case 'h': case 'H':
+        hint.style.opacity = hint.style.opacity === '1' ? '0' : '1';
+        break;
+    }
+  });
+
+  // 触屏 / 鼠标滑动翻页
+  var x0 = null;
+  document.addEventListener('touchstart', function(e){ x0 = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', function(e){
+    if (x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 55) { dx < 0 ? next() : prev(); }
+    x0 = null;
+  }, {passive:true});
+
+  window.addEventListener('resize', fit);
+
+  fit();
+
+  // 支持 #p3 锚点直达某页，刷新不丢位置
+  var m = /^#p(\d+)$/.exec(location.hash || '');
+  show(m ? parseInt(m[1], 10) - 1 : 0);
+
+  setTimeout(function(){ hint.style.opacity = '0'; }, 5000);
+})();
+</script>
+</body>
+</html>

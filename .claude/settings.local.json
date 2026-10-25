@@ -32,7 +32,15 @@
       "PowerShell($c=[System.IO.File]::ReadAllText\\(\"e:\\\\CODE\\\\game.cpp\",[System.Text.Encoding]::UTF8\\);$d=0;$lines=$c-split\"`n\";[System.Collections.ArrayList]$suspects=@\\(\\);for\\($i=0;$i-lt$lines.Count;$i++\\){$p=$d;$b=0;foreach\\($ch in $lines[$i].ToCharArray\\(\\)\\){if\\($ch-eq'{'\\){$d++;$b++}elseif\\($ch-eq'}'\\){$d--;$b--}}if\\($b-lt-1\\){[void]$suspects.Add\\(\"L$\\($i+1\\): braces=$b $\\($lines[$i].Trim\\(\\)\\)\"\\)}};$suspects|Select-Object -First 20)",
       "PowerShell($c=[System.IO.File]::ReadAllText\\(\"e:\\\\CODE\\\\game.cpp\",[System.Text.Encoding]::UTF8\\);$o=\\($c.ToCharArray\\(\\)|?{$_-eq'{'}\\).Count;$cls=\\($c.ToCharArray\\(\\)|?{$_-eq'}'}\\).Count;Write-Host \"diff=$\\($o-$cls\\)\")",
       "PowerShell($c=[System.IO.File]::ReadAllText\\(\"e:\\\\CODE\\\\game.cpp\",[System.Text.Encoding]::UTF8\\);$d=0;$l=0;foreach\\($ln in $c-split\"`n\"\\){$l++;$p=$d;foreach\\($ch in $ln.ToCharArray\\(\\)\\){if\\($ch-eq'{'\\){$d++}elseif\\($ch-eq'}'\\){$d--}}if\\($p-gt2-and$d-le1\\){Write-Host\"L$l depth $p->$d\"}})",
-      "PowerShell($c=[System.IO.File]::ReadAllText\\(\"e:\\\\CODE\\\\main.cpp\",[System.Text.Encoding]::UTF8\\);$lines=$c-split\"`n\";$l=$lines[352];Write-Host \"Line 353:\";for\\($i=0;$i-lt$l.Length;$i++\\){$ch=$l[$i];$n=[int]$ch;if\\($n-gt127\\){Write-Host \"  pos $i : U+$\\($n.ToString\\('X4'\\)\\) = '$ch'\"} elseif\\($n-lt32\\){Write-Host \"  pos $i : ASCII $n\"}})"
+      "PowerShell($c=[System.IO.File]::ReadAllText\\(\"e:\\\\CODE\\\\main.cpp\",[System.Text.Encoding]::UTF8\\);$lines=$c-split\"`n\";$l=$lines[352];Write-Host \"Line 353:\";for\\($i=0;$i-lt$l.Length;$i++\\){$ch=$l[$i];$n=[int]$ch;if\\($n-gt127\\){Write-Host \"  pos $i : U+$\\($n.ToString\\('X4'\\)\\) = '$ch'\"} elseif\\($n-lt32\\){Write-Host \"  pos $i : ASCII $n\"}})",
+      "Bash(cd /tmp)",
+      "Bash(curl -sS -G -L --max-time 15 -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 Chrome/120.0 Safari/537.36\" \"https://so.news.cn/getNews\" --data-urlencode \"keyword=建党百年 天安门\" --data-urlencode \"curPage=1\" --data-urlencode \"sortField=0\" --data-urlencode \"searchFields=1\" --data-urlencode \"lang=cn\")",
+      "Bash(curl -sS -G -L --max-time 15 -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 Chrome/120.0 Safari/537.36\" \"http://search.people.cn/s\" --data-urlencode \"keyword=建党百年\" --data-urlencode \"st=0\")",
+      "Bash(python -c \"import pypdf; print\\('pypdf ok'\\)\")",
+      "Bash(python -c \"import fitz; print\\('pymupdf ok'\\)\")",
+      "Bash(python -c \"import pdfplumber; print\\('pdfplumber ok'\\)\")",
+      "Bash(python -c \"import PyPDF2; print\\('PyPDF2 ok'\\)\")",
+      "Bash(powershell.exe -NoProfile -NonInteractive -Command 'Get-NetTCPConnection -State Listen | Select-Object LocalAddress,LocalPort,OwningProcess,@{n=\"Proc\";e={\\(Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue\\).ProcessName}},@{n=\"Path\";e={\\(Get-CimInstance Win32_Process -Filter \"ProcessId=$\\($_.OwningProcess\\)\" -ErrorAction SilentlyContinue\\).ExecutablePath}} | Sort-Object LocalPort | Format-Table -AutoSize | Out-String -Width 400')"
     ]
   }
 }

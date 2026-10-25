@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FIRR 敏感性分析图 — 销售价格 / 经营成本</title>
+<style>
+  :root {
+    --surface-1:#fcfcfb; --page:#f9f9f7;
+    --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#898781;
+    --gridline:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10);
+    --series-1:#2a78d6; --series-2:#eb6834;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      --surface-1:#1a1a19; --page:#0d0d0d;
+      --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#898781;
+      --gridline:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
+      --series-1:#3987e5; --series-2:#d95926;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface-1:#1a1a19; --page:#0d0d0d;
+    --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#898781;
+    --gridline:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
+    --series-1:#3987e5; --series-2:#d95926;
+    color-scheme: dark;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:30px 20px 56px; background:var(--page); color:var(--text-primary);
+         font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif; }
+  .wrap { max-width:1020px; margin:0 auto; }
+  .card { background:var(--surface-1); border:1px solid var(--border); border-radius:12px;
+           padding:14px; position:relative; }
+  svg { display:block; width:100%; height:auto; }
+  .tip { position:absolute; pointer-events:none; opacity:0; transition:opacity .08s;
+          background:var(--surface-1); border:1px solid var(--border); border-radius:8px;
+          padding:8px 11px; font-size:12.5px; line-height:1.7;
+          box-shadow:0 4px 16px rgba(0,0,0,.14); white-space:nowrap; z-index:5; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:1px; }
+  .v { font-variant-numeric:tabular-nums; }
+  h1 { font-size:19px; margin:0 0 6px; }
+  h2 { font-size:15px; margin:34px 0 10px; }
+  p.sub { color:var(--text-secondary); font-size:13px; margin:0 0 18px; line-height:1.7; }
+  table { border-collapse:collapse; width:100%; font-size:13px; font-variant-numeric:tabular-nums; }
+  th,td { padding:8px 12px; text-align:right; border-bottom:1px solid var(--border); }
+  th:first-child, td:first-child { text-align:left; }
+  th { color:var(--text-secondary); font-weight:600; }
+  td.k { font-weight:600; }
+  tbody tr:hover { background:rgba(127,127,127,.07); }
+  .note { color:var(--text-muted); font-size:12.5px; line-height:1.9; margin-top:14px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(158px,1fr)); gap:12px; margin-top:16px; }
+  .stat { background:var(--surface-1); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+  .stat .lab { font-size:12px; color:var(--text-secondary); }
+  .stat .val { font-size:21px; font-weight:600; margin-top:3px; font-variant-numeric:tabular-nums; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>FIRR 敏感性分析图</h1>
+  <p class="sub">分析因素：销售价格、经营成本 ｜ 变化幅度：±5% ~ ±20% ｜ 基准折现率 i<sub>c</sub> = 10%<br>
+  所得税按 15% ×（销售收入 − 经营成本 − 销售税金及附加）随因素变化重算</p>
+
+  <div class="card" id="chartcard">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 610" width="960" height="610" font-family="system-ui,-apple-system,'Segoe UI','Microsoft YaHei',sans-serif" role="img" aria-label="FIRR 对销售价格与经营成本的敏感性分析图">
+<rect width="960" height="610" fill="var(--surface-1)"/>
+<text x="86" y="34" font-size="19" font-weight="600" fill="var(--text-primary)">FIRR 敏感性分析图 — 销售价格 / 经营成本</text>
+<text x="86" y="56" font-size="12.5" fill="var(--text-secondary)">基准 FIRR = 40.05%　基准收益率 i_c = 10%（虚线）　所得税按 15%×(收入−经营成本−税金及附加) 重算</text>
+<line x1="86" y1="518.0" x2="822" y2="518.0" stroke="var(--gridline)" stroke-width="1"/>
+<text x="74" y="522.0" font-size="12" text-anchor="end" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">-10%</text>
+<line x1="86" y1="469.1" x2="822" y2="469.1" stroke="var(--gridline)" stroke-width="1"/>
+<text x="74" y="473.1" font-size="12" text-anchor="end" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">0%</text>
+<line x1="86" y1="420.2" x2="822" y2="420.2" stroke="var(--gridline)" stroke-width="1"/>
+<text x="74" y="424.2" font-size="12" text-anchor="end" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">10%</text>
+<line x1="86" y1="371.3" x2="822" y2="371.3" stroke="var(--gridline)" stroke-width="1"/>
+<text x="74" y="375.3" font-size="12" text-anchor="end" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">20%</text>
+<line x1="86" y1="322.4" x2="822" y2="322.4" stroke="var(--gridline)" stroke-width="1"/>
+<text x="74" y="326.4" font-size="12" text-anchor="end" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">30%</text>
+<line x1="86" y1="273.6" x2="822" y2="273.6" stroke="var(--gridline)" stroke-width="1"/>
+<text x="74" y="277.6" font-size="12" text-anchor="end" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">40%</text>
+<line x1="86" y1="224.7" x2="822" y2="224.7" stroke="var(--gridline)" stroke-width="1"/>
+<text x="74" y="228.7" font-size="12" text-anchor="end" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">50%</text>
+<line x1="86" y1="175.8" x2="822" y2="175.8" stroke="var(--gridline)" stroke-width="1"/>
+<text x="74" y="179.8" font-size="12" text-anchor="end" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">60%</text>
+<line x1="86" y1="126.9" x2="822" y2="126.9" stroke="var(--gridline)" stroke-width="1"/>
+<text x="74" y="130.9" font-size="12" text-anchor="end" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">70%</text>
+<line x1="86" y1="78.0" x2="822" y2="78.0" stroke="var(--gridline)" stroke-width="1"/>
+<text x="74" y="82.0" font-size="12" text-anchor="end" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">80%</text>
+<line x1="454.0" y1="78" x2="454.0" y2="518" stroke="var(--axis)" stroke-width="1" stroke-dasharray="3 3"/>
+<line x1="86" y1="420.2" x2="822" y2="420.2" stroke="var(--text-muted)" stroke-width="1.5" stroke-dasharray="7 4"/>
+<text x="94" y="437.2" font-size="11.5" text-anchor="start" fill="var(--text-muted)">i_c = 10%</text>
+<line x1="230.5" y1="420.2" x2="230.5" y2="518" stroke="var(--series-1)" stroke-width="1" stroke-dasharray="2 3" opacity="0.55"/>
+<text x="230.5" y="512.0" font-size="10.5" text-anchor="middle" fill="var(--series-1)" opacity="0.9">-13.1%</text>
+<line x1="732.5" y1="420.2" x2="732.5" y2="518" stroke="var(--series-2)" stroke-width="1" stroke-dasharray="2 3" opacity="0.55"/>
+<text x="732.5" y="512.0" font-size="10.5" text-anchor="middle" fill="var(--series-2)" opacity="0.9">+16.3%</text>
+<line x1="86" y1="518" x2="822" y2="518" stroke="var(--axis)" stroke-width="1"/>
+<line x1="111.7" y1="518" x2="111.7" y2="523" stroke="var(--axis)" stroke-width="1"/>
+<text x="111.7" y="540" font-size="12" text-anchor="middle" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">-20%</text>
+<line x1="197.3" y1="518" x2="197.3" y2="523" stroke="var(--axis)" stroke-width="1"/>
+<text x="197.3" y="540" font-size="12" text-anchor="middle" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">-15%</text>
+<line x1="282.8" y1="518" x2="282.8" y2="523" stroke="var(--axis)" stroke-width="1"/>
+<text x="282.8" y="540" font-size="12" text-anchor="middle" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">-10%</text>
+<line x1="368.4" y1="518" x2="368.4" y2="523" stroke="var(--axis)" stroke-width="1"/>
+<text x="368.4" y="540" font-size="12" text-anchor="middle" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">-5%</text>
+<line x1="454.0" y1="518" x2="454.0" y2="523" stroke="var(--axis)" stroke-width="1"/>
+<text x="454.0" y="540" font-size="12" text-anchor="middle" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">+0%</text>
+<line x1="539.6" y1="518" x2="539.6" y2="523" stroke="var(--axis)" stroke-width="1"/>
+<text x="539.6" y="540" font-size="12" text-anchor="middle" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">+5%</text>
+<line x1="625.2" y1="518" x2="625.2" y2="523" stroke="var(--axis)" stroke-width="1"/>
+<text x="625.2" y="540" font-size="12" text-anchor="middle" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">+10%</text>
+<line x1="710.7" y1="518" x2="710.7" y2="523" stroke="var(--axis)" stroke-width="1"/>
+<text x="710.7" y="540" font-size="12" text-anchor="middle" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">+15%</text>
+<line x1="796.3" y1="518" x2="796.3" y2="523" stroke="var(--axis)" stroke-width="1"/>
+<text x="796.3" y="540" font-size="12" text-anchor="middle" fill="var(--text-muted)" style="font-variant-numeric:tabular-nums">+20%</text>
+<text x="454" y="572" font-size="13" text-anchor="middle" fill="var(--text-secondary)">不确定因素变化率</text>
+<text x="22" y="298" font-size="13" text-anchor="middle" fill="var(--text-secondary)" transform="rotate(-90 22 298)">财务内部收益率 FIRR</text>
+<polyline points="197.3,451.4 282.8,379.2 368.4,322.7 454.0,273.3 539.6,228.4 625.2,186.7 710.7,147.5 796.3,110.5" fill="none" stroke="var(--series-1)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="111.7" cy="517.0" r="5.5" fill="var(--surface-1)" stroke="var(--series-1)" stroke-width="2" stroke-dasharray="3 2.5"/>
+<circle cx="197.3" cy="451.4" r="4.5" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="282.8" cy="379.2" r="4.5" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="368.4" cy="322.7" r="4.5" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="454.0" cy="273.3" r="4.5" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="539.6" cy="228.4" r="4.5" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="625.2" cy="186.7" r="4.5" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="710.7" cy="147.5" r="4.5" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="796.3" cy="110.5" r="4.5" fill="var(--series-1)" stroke="var(--surface-1)" stroke-width="2"/>
+<polyline points="111.7,139.6 197.3,170.4 282.8,202.8 368.4,237.0 454.0,273.3 539.6,312.5 625.2,355.7 710.7,405.7 796.3,471.5" fill="none" stroke="var(--series-2)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="111.7" cy="139.6" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="197.3" cy="170.4" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="282.8" cy="202.8" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="368.4" cy="237.0" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="454.0" cy="273.3" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="539.6" cy="312.5" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="625.2" cy="355.7" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="710.7" cy="405.7" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/>
+<circle cx="796.3" cy="471.5" r="4.5" fill="var(--series-2)" stroke="var(--surface-1)" stroke-width="2"/>
+<text x="811.3" y="108.5" font-size="12.5" font-weight="600" fill="var(--text-primary)">销售价格</text>
+<text x="811.3" y="125.5" font-size="12" fill="var(--text-secondary)" style="font-variant-numeric:tabular-nums">73.4%</text>
+<text x="811.3" y="469.5" font-size="12.5" font-weight="600" fill="var(--text-primary)">经营成本</text>
+<text x="811.3" y="486.5" font-size="12" fill="var(--text-secondary)" style="font-variant-numeric:tabular-nums">-0.5%</text>
+<line x1="560" y1="28" x2="578" y2="28" stroke="var(--series-1)" stroke-width="2.5"/>
+<circle cx="569" cy="28" r="4" fill="var(--series-1)"/>
+<text x="584" y="32" font-size="12.5" fill="var(--text-secondary)">销售价格</text>
+<line x1="690" y1="28" x2="708" y2="28" stroke="var(--series-2)" stroke-width="2.5"/>
+<circle cx="699" cy="28" r="4" fill="var(--series-2)"/>
+<text x="714" y="32" font-size="12.5" fill="var(--text-secondary)">经营成本</text>
+<text x="111.7" y="500.0" font-size="11" text-anchor="middle" fill="var(--series-1)">FIRR 不存在</text>
+<g id="hoverlayer" style="display:none"><line id="cross" x1="0" y1="78" x2="0" y2="518" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="3 3"/></g>
+<rect id="hit" x="86" y="78" width="736" height="440" fill="transparent" style="cursor:crosshair"/>
+</svg>
+    <div class="tip" id="tip"></div>
+  </div>
+
+  <div class="cards">
+    <div class="stat"><div class="lab">基准 FIRR</div><div class="val">40.05%</div></div>
+    <div class="stat"><div class="lab">价格敏感度系数</div><div class="val">+4.82</div></div>
+    <div class="stat"><div class="lab">成本敏感度系数</div><div class="val">-3.86</div></div>
+    <div class="stat"><div class="lab">价格临界点</div><div class="val">-13.06%</div></div>
+    <div class="stat"><div class="lab">成本临界点</div><div class="val">+16.27%</div></div>
+  </div>
+
+  <h2>敏感性分析数据表</h2>
+  <table>
+    <thead><tr><th>变化率</th><th>销售价格 FIRR</th><th>经营成本 FIRR</th>
+    <th>价格 Δ(pp)</th><th>成本 Δ(pp)</th></tr></thead>
+    <tbody>
+      <tr><td class="k">-20%</td><td>不可行</td><td>67.41%</td><td>—</td><td>+27.36</td></tr>
+      <tr><td class="k">-15%</td><td>3.61%</td><td>61.10%</td><td>-36.43</td><td>+21.05</td></tr>
+      <tr><td class="k">-10%</td><td>18.40%</td><td>54.47%</td><td>-21.65</td><td>+14.43</td></tr>
+      <tr><td class="k">-5%</td><td>29.95%</td><td>47.48%</td><td>-10.10</td><td>+7.44</td></tr>
+      <tr><td class="k">+0%</td><td>40.05%</td><td>40.05%</td><td>+0.00</td><td>+0.00</td></tr>
+      <tr><td class="k">+5%</td><td>49.24%</td><td>32.03%</td><td>+9.19</td><td>-8.02</td></tr>
+      <tr><td class="k">+10%</td><td>57.77%</td><td>23.19%</td><td>+17.72</td><td>-16.86</td></tr>
+      <tr><td class="k">+15%</td><td>65.78%</td><td>12.97%</td><td>+25.73</td><td>-27.08</td></tr>
+      <tr><td class="k">+20%</td><td>73.35%</td><td>-0.49%</td><td>+33.31</td><td>-40.54</td></tr>
+    </tbody>
+  </table>
+
+  <p class="note">
+    <b>敏感度系数</b> = FIRR 变化率 ÷ 因素变化率（取 ±5% 平均）。&nbsp;|&nbsp;
+    <b>临界点</b> = 使 FIRR 恰好等于 i<sub>c</sub> = 10% 时该因素的变化率。<br>
+    销售价格 −20% 时全周期净现金流量均为负，FIRR 不存在（图上以空心标记表示），说明项目对价格下跌的承受能力有限。
+  </p>
+</div>
+
+<script>
+const DATA = [
+  {d:-0.2000, p:null, c:0.674081},
+  {d:-0.1500, p:0.036128, c:0.610953},
+  {d:-0.1000, p:0.183953, c:0.544729},
+  {d:-0.0500, p:0.299464, c:0.474842},
+  {d:+0.0000, p:0.400470, c:0.400470},
+  {d:+0.0500, p:0.492401, c:0.320299},
+  {d:+0.1000, p:0.577707, c:0.231889},
+  {d:+0.1500, p:0.657784, c:0.129657},
+  {d:+0.2000, p:0.733543, c:-0.004940}
+];
+const GEO = {ml:86, mt:78, pw:736, ph:440, xlo:-0.215, xhi:0.215, ylo:-0.1, yhi:0.8, w:960};
+const CARD = document.getElementById('chartcard');
+const TIP = document.getElementById('tip');
+const HOVER = document.getElementById('hoverlayer');
+const CROSS = document.getElementById('cross');
+const HIT = document.getElementById('hit');
+
+const sx = d => GEO.ml + (d - GEO.xlo) / (GEO.xhi - GEO.xlo) * GEO.pw;
+const sy = r => GEO.mt + (GEO.yhi - r) / (GEO.yhi - GEO.ylo) * GEO.ph;
+const pct = v => v === null ? '不可行' : (v * 100).toFixed(2) + '%';
+
+function nearest(clientX) {
+  const scale = CARD.getBoundingClientRect().width / GEO.w;
+  const x = (clientX - CARD.getBoundingClientRect().left) / scale;
+  let best = 0, bd = Infinity;
+  DATA.forEach((row, i) => {
+    const dist = Math.abs(sx(row.d) - x);
+    if (dist < bd) { bd = dist; best = i; }
+  });
+  return best;
+}
+
+HIT.addEventListener('mousemove', e => {
+  const box = CARD.getBoundingClientRect();
+  const scale = box.width / GEO.w;
+  const row = DATA[nearest(e.clientX)];
+
+  HOVER.style.display = '';
+  CROSS.setAttribute('x1', sx(row.d));
+  CROSS.setAttribute('x2', sx(row.d));
+
+  TIP.innerHTML =
+    '<b>变化率 ' + (row.d > 0 ? '+' : '') + (row.d * 100).toFixed(0) + '%</b><br>' +
+    '<span class="dot" style="background:var(--series-1)"></span>销售价格 ' +
+    '<span class="v">' + pct(row.p) + '</span><br>' +
+    '<span class="dot" style="background:var(--series-2)"></span>经营成本 ' +
+    '<span class="v">' + pct(row.c) + '</span>';
+  TIP.style.opacity = 1;
+
+  const px = sx(row.d) * scale;
+  TIP.style.left = (row.d > 0.11 ? px - TIP.offsetWidth - 16 : px + 16) + 'px';
+
+  const cand = [row.p, row.c].filter(v => v !== null);
+  const py = cand.length ? sy(Math.max.apply(null, cand)) * scale : GEO.mt * scale;
+  TIP.style.top = Math.min(Math.max(py - 40, 8), box.height - TIP.offsetHeight - 8) + 'px';
+});
+
+HIT.addEventListener('mouseleave', () => {
+  HOVER.style.display = 'none';
+  TIP.style.opacity = 0;
+});
+</script>
+</body>
+</html>

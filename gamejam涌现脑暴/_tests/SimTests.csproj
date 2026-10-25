@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       《立法村》Sim 层测试集 —— 脱离 Unity 的控制台跑法。
+
+       目的：让程序员在 Unity 工程都还没起的时候，就能红/绿。
+       用的是 NUnit（Unity Test Framework 内置的也是 NUnit 3），
+       所以 EditMode/ 下的 .cs 文件**一个字都不用改**就能拖进 Unity。
+
+       跑法（详见 测试集-程序.md）：
+           dotnet test                            全部
+           dotnet test (加 filter 参数选 Category=Fast)   只跑快的
+       ═══════════════════════════════════════════════════════════════ -->
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>          <!-- 与 Unity 2022.3 对齐，别用 C# 10+ 语法 -->
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>SimTests</AssemblyName>
+    <RootNamespace>SimLit.Tests</RootNamespace>
+    <!-- 只吃我们自己列的源文件，不要把 _proto 里的 Program.cs / Calib.cs 拖进来 -->
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 被测对象：参考实现的 Sim 层（纯确定性，零浮点），原样编译，不复制 -->
+    <Compile Include="..\_proto\refimpl\Sim\*.cs" LinkBase="Sim" />
+    <!-- 诊断/统计层（允许浮点，只读，不参与 Tick） -->
+    <Compile Include="..\_proto\refimpl\Diag\*.cs" LinkBase="Diag" />
+    <!-- 测试本体 -->
+    <Compile Include="EditMode\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+
+</Project>

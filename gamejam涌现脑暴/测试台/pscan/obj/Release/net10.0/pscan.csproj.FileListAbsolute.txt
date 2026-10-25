@@ -1,0 +1,15 @@
+E:\CODE\gamejam涌现脑暴\测试台\pscan\obj\Release\net10.0\pscan.GeneratedMSBuildEditorConfig.editorconfig
+E:\CODE\gamejam涌现脑暴\测试台\pscan\obj\Release\net10.0\pscan.AssemblyInfoInputs.cache
+E:\CODE\gamejam涌现脑暴\测试台\pscan\obj\Release\net10.0\pscan.AssemblyInfo.cs
+E:\CODE\gamejam涌现脑暴\测试台\pscan\obj\Release\net10.0\pscan.csproj.CoreCompileInputs.cache
+E:\CODE\gamejam涌现脑暴\测试台\pscan\obj\Release\net10.0\pscan.sourcelink.json
+E:\CODE\gamejam涌现脑暴\测试台\pscan\bin\Release\net10.0\pscan.exe
+E:\CODE\gamejam涌现脑暴\测试台\pscan\bin\Release\net10.0\pscan.deps.json
+E:\CODE\gamejam涌现脑暴\测试台\pscan\bin\Release\net10.0\pscan.runtimeconfig.json
+E:\CODE\gamejam涌现脑暴\测试台\pscan\bin\Release\net10.0\pscan.dll
+E:\CODE\gamejam涌现脑暴\测试台\pscan\bin\Release\net10.0\pscan.pdb
+E:\CODE\gamejam涌现脑暴\测试台\pscan\obj\Release\net10.0\pscan.dll
+E:\CODE\gamejam涌现脑暴\测试台\pscan\obj\Release\net10.0\refint\pscan.dll
+E:\CODE\gamejam涌现脑暴\测试台\pscan\obj\Release\net10.0\pscan.pdb
+E:\CODE\gamejam涌现脑暴\测试台\pscan\obj\Release\net10.0\pscan.genruntimeconfig.cache
+E:\CODE\gamejam涌现脑暴\测试台\pscan\obj\Release\net10.0\ref\pscan.dll

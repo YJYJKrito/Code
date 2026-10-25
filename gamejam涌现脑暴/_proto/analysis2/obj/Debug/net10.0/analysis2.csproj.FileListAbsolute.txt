@@ -1,0 +1,15 @@
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\bin\Debug\net10.0\analysis2.exe
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\bin\Debug\net10.0\analysis2.deps.json
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\bin\Debug\net10.0\analysis2.runtimeconfig.json
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\bin\Debug\net10.0\analysis2.dll
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\bin\Debug\net10.0\analysis2.pdb
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\obj\Debug\net10.0\analysis2.GeneratedMSBuildEditorConfig.editorconfig
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\obj\Debug\net10.0\analysis2.AssemblyInfoInputs.cache
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\obj\Debug\net10.0\analysis2.AssemblyInfo.cs
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\obj\Debug\net10.0\analysis2.csproj.CoreCompileInputs.cache
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\obj\Debug\net10.0\analysis2.sourcelink.json
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\obj\Debug\net10.0\analysis2.dll
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\obj\Debug\net10.0\refint\analysis2.dll
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\obj\Debug\net10.0\analysis2.pdb
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\obj\Debug\net10.0\analysis2.genruntimeconfig.cache
+E:\CODE\gamejam涌现脑暴\_proto\analysis2\obj\Debug\net10.0\ref\analysis2.dll
